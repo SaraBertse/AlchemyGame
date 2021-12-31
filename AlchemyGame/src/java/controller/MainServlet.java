@@ -7,10 +7,13 @@ package controller;
 import java.io.IOException;
 import java.io.PrintWriter;
 import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import model.DBHandler;
+import model.Quest;
 
 /**
  *
@@ -70,15 +73,17 @@ public class MainServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        ServletContext application = request.getServletContext();
+        DBHandler dbh = (DBHandler) application.getAttribute("dbh");
+        if (dbh == null) {
+            dbh = new DBHandler();
+        }
   
         if ("brew".equals(request.getParameter("action"))) {
             RequestDispatcher rd = request.getRequestDispatcher("/brew.jsp");
 
             rd.forward(request, response);
-        } else if ("quest".equals(request.getParameter("action"))) {
-            RequestDispatcher rd = request.getRequestDispatcher("/quest.jsp");
 
-            rd.forward(request, response);
         } else if ("equipment".equals(request.getParameter("action"))) {
             RequestDispatcher rd = request.getRequestDispatcher("/equipment.jsp");
 
@@ -87,7 +92,17 @@ public class MainServlet extends HttpServlet {
             RequestDispatcher rd = request.getRequestDispatcher("/market.jsp");
 
             rd.forward(request, response);
+        } else if ("quest".equals(request.getParameter("action"))) {
+            RequestDispatcher rd = request.getRequestDispatcher("/quest.jsp");
+            int uid = dbh.getUserID((String)application.getAttribute("username"));
+            Quest questRewards = dbh.goQuesting(3, uid);
+            rd.forward(request, response);
+        } else {
+            RequestDispatcher rd = request.getRequestDispatcher("/main.jsp");
+
+            rd.forward(request, response);
         }
+            
         //Inventory
         //Cauldron upgrade
         //Recipe book

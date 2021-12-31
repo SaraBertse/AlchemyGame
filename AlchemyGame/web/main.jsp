@@ -19,16 +19,16 @@
             <input type="submit" value="Brew">
         </form>
         <form method="post" action="/AlchemyGame/MainServlet">
-            <input type="hidden" name="action" value="quest">
-            <input type="submit" value="Quest">
-        </form>
-        <form method="post" action="/AlchemyGame/MainServlet">
             <input type="hidden" name="action" value="equipment">
             <input type="submit" value="Equipment">
         </form>
         <form method="post" action="/AlchemyGame/MainServlet">
             <input type="hidden" name="action" value="market">
             <input type="submit" value="Market">
+        </form>
+        <form method="post" action="/AlchemyGame/MainServlet">
+            <input type="hidden" name="action" value="quest">
+            <input type="submit" value="Quest">
         </form>
     </body>
 </html>

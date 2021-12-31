@@ -20,12 +20,16 @@ public class DBHandler {
        private PreparedStatement findUser;
        private PreparedStatement getUserCount;
        private PreparedStatement addUser;
-      // private PreparedStatement getQuestions;
-      // private PreparedStatement getResults;
-      // private PreparedStatement getUserID;
-     //  private PreparedStatement setPoints;
+       private PreparedStatement getAllIngredients;
+       private PreparedStatement updateFoundIngredients;
+       private PreparedStatement getUserID;
+       private PreparedStatement checkIfIngredientNull;
+
        int userCount;
        User[] users;
+       ArrayList<String> allIngredientsByName;
+       ArrayList<Integer> allIngredientsByID;
+       
        
        
        public DBHandler(){
@@ -85,4 +89,68 @@ public class DBHandler {
                e.printStackTrace();
         }
     }
+    
+    public Quest goQuesting(int power, int uid) {
+        Quest quest = new Quest();
+        allIngredientsByName = new ArrayList<>();
+        allIngredientsByID = new ArrayList<>();
+        
+        try {
+            getAllIngredients = connection.prepareStatement("select * from ingredients order by rarity asc;");
+            quest.setMonster("troll");
+          //  quest.setIngr1("troll fat");
+            ResultSet result  = getAllIngredients.executeQuery();
+            while(result.next()){
+                    allIngredientsByName.add(result.getString("name"));
+                    allIngredientsByID.add(result.getInt("id"));
+            }
+            if (power < 5){
+               int randIndex = (int)(Math.random()*(6-0+1)+0);  //(max-min+1)+min
+               int randAmount = (int)(Math.random()*(4-1+1)+1);
+               quest.setIngr1(allIngredientsByName.get(randIndex));
+               quest.setNrIngr1(randAmount);
+               checkIfIngredientNull = connection.prepareStatement("select * from user_ingredients"
+                       + " WHERE user_id = " +uid+ " AND ingredient_id = " + allIngredientsByID.get(randIndex));
+               ResultSet result2 = checkIfIngredientNull.executeQuery();
+               if (!result2.next()){
+                   updateFoundIngredients = connection.prepareStatement("INSERT INTO "
+                           + "user_ingredients (user_id,ingredient_id,amount) VALUES (?,?,?)");
+                    updateFoundIngredients.setInt(1, uid);
+                    updateFoundIngredients.setInt(2, allIngredientsByID.get(randIndex));
+                    updateFoundIngredients.setInt(3, randAmount);
+                    updateFoundIngredients.executeUpdate();
+               } else {
+                   updateFoundIngredients = connection.prepareStatement("UPDATE user_ingredients SET amount = amount+? WHERE user_id = ? AND ingredient_id = ?");
+                    updateFoundIngredients.setInt(1, randAmount);
+                    updateFoundIngredients.setInt(2, uid);
+                    updateFoundIngredients.setInt(3, allIngredientsByID.get(randIndex));
+                    updateFoundIngredients.executeUpdate();
+               }
+             //  updateFoundIngredients = connection.prepareStatement();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return quest;
+    }
+    
+    public int getUserID(String username){
+        int uID = -1;
+        
+        try{
+            getUserID = connection.prepareStatement("SELECT id FROM users \n" +
+                "WHERE username = ?");
+            getUserID.setString(1, username);
+            ResultSet userIDResult = getUserID.executeQuery();
+            userIDResult.next();
+            uID = userIDResult.getInt("id");
+            
+        }
+        catch(Exception e){
+            e.printStackTrace();
+        }
+        
+        return uID;
+    }
+            
 }
