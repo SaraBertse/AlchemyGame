@@ -1,7 +1,7 @@
 <%-- 
     Document   : brew
-    Created on : 29 Dec 2021, 16:47:18
-    Author     : sarab
+    Created on : 29 dec. 2021, 16:47:31
+    Author     : HP
 --%>
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
@@ -12,6 +12,6 @@
         <title>JSP Page</title>
     </head>
     <body>
-        <h1>Brew</h1>
+        <h1>Brew potions!</h1>
     </body>
 </html>

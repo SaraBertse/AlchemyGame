@@ -6,17 +6,16 @@ package model;
 
 /**
  *
- * @author sarab
+ * @author HP
  */
 public class Quest {
     String monster = "rats";
     String ingr1 = "";
-    int nrIngr1=0;
+    int nrIngr1 = 0;
     String ingr2 = "";
-    int nrIngr2=0;
+    int nrIngr2 = 0;
     String ingr3 = "";
-    int nrIngr3=0;
-
+    int nrIngr3 = 0;
 
     public String getMonster() {
         return monster;
@@ -25,7 +24,7 @@ public class Quest {
     public void setMonster(String monster) {
         this.monster = monster;
     }
-
+    
     public String getIngr1() {
         return ingr1;
     }
@@ -50,7 +49,7 @@ public class Quest {
         this.ingr3 = ingr3;
     }
     
-        public int getNrIngr1() {
+    public int getNrIngr1() {
         return nrIngr1;
     }
 
@@ -73,5 +72,4 @@ public class Quest {
     public void setNrIngr3(int nrIngr3) {
         this.nrIngr3 = nrIngr3;
     }
-
 }

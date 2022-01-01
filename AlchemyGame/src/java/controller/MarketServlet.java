@@ -16,13 +16,12 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import model.DBHandler;
 import model.Potion;
-import model.Quest;
 
 /**
  *
  * @author HP
  */
-public class MainServlet extends HttpServlet {
+public class MarketServlet extends HttpServlet {
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -41,10 +40,10 @@ public class MainServlet extends HttpServlet {
             out.println("<!DOCTYPE html>");
             out.println("<html>");
             out.println("<head>");
-            out.println("<title>Servlet MainServlet</title>");            
+            out.println("<title>Servlet MarketServlet</title>");            
             out.println("</head>");
             out.println("<body>");
-            out.println("<h1>Servlet MainServlet at " + request.getContextPath() + "</h1>");
+            out.println("<h1>Servlet MarketServlet at " + request.getContextPath() + "</h1>");
             out.println("</body>");
             out.println("</html>");
         }
@@ -82,39 +81,27 @@ public class MainServlet extends HttpServlet {
         if (dbh == null) {
             dbh = new DBHandler();
         }
-  
-        if ("brew".equals(request.getParameter("action"))) {
-            RequestDispatcher rd = request.getRequestDispatcher("/brew.jsp");
-
-            rd.forward(request, response);
-
-        } else if ("equipment".equals(request.getParameter("action"))) {
-            RequestDispatcher rd = request.getRequestDispatcher("/equipment.jsp");
-
-            rd.forward(request, response);
-        } else if ("market".equals(request.getParameter("action"))) {
-            ArrayList<Potion> allUserPotions = dbh.fetchAllUserPotions(
-                    dbh.getUserID((String)application.getAttribute("username")));
-            session.setAttribute("userPotions", allUserPotions);
-            RequestDispatcher rd = request.getRequestDispatcher("/market.jsp");
-            rd.forward(request, response);
-            
-        } else if ("quest".equals(request.getParameter("action"))) {
-            RequestDispatcher rd = request.getRequestDispatcher("/quest.jsp");
-            int uid = dbh.getUserID((String)application.getAttribute("username"));
-            Quest questRewards = dbh.goQuesting(3, uid);
-            session.setAttribute("questRewards", questRewards);
-            rd.forward(request, response);
-        } else {
-            RequestDispatcher rd = request.getRequestDispatcher("/main.jsp");
-
-            rd.forward(request, response);
-        }
-            
-        //Inventory
-        //Cauldron upgrade
-        //Recipe book
-        //Stats
+        
+        int uid = dbh.getUserID((String)application.getAttribute("username"));
+        
+        
+        ArrayList<Potion> potions = (ArrayList<Potion>)session.getAttribute("userPotions");
+        String str = "sell";
+        for(int i = 0; i < potions.size(); i++){
+            str = "sell";
+            str += i;
+            if (str.equals(request.getParameter("action"))) {
+                dbh.sellPotion(uid, potions.get(i));
+                
+                potions = dbh.fetchAllUserPotions(uid);
+                session.setAttribute("userPotions", potions);
+                
+                RequestDispatcher rd = request.getRequestDispatcher("/market.jsp");
+                rd.forward(request, response);
+            }
+        } 
+        
+        processRequest(request, response);
     }
 
     /**

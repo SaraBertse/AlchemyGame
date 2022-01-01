@@ -9,10 +9,11 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.Random;
 
 /**
  *
- * @author sarab
+ * @author Sara Bertse and Jacob Dwyer
  */
 public class DBHandler {
     
@@ -21,9 +22,14 @@ public class DBHandler {
        private PreparedStatement getUserCount;
        private PreparedStatement addUser;
        private PreparedStatement getAllIngredients;
+       private PreparedStatement getAllUserPotions;
+       private PreparedStatement getPotionFromID;
        private PreparedStatement updateFoundIngredients;
        private PreparedStatement getUserID;
        private PreparedStatement checkIfIngredientNull;
+       private PreparedStatement updateGold;
+       private PreparedStatement updatePotionsSold;
+       private PreparedStatement updatePotionsAmount;
 
        int userCount;
        User[] users;
@@ -38,7 +44,7 @@ public class DBHandler {
          
        public static void connToDB(){
           try{
-           connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/alchemy","admin", "admin");
+           connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/alchemy_2","root", "admin");
            System.out.println("connection successful");
           }
           catch(Exception e){
@@ -107,8 +113,10 @@ public class DBHandler {
             if (power < 5){
                int randIndex = (int)(Math.random()*(6-0+1)+0);  //(max-min+1)+min
                int randAmount = (int)(Math.random()*(4-1+1)+1);
+               
                quest.setIngr1(allIngredientsByName.get(randIndex));
                quest.setNrIngr1(randAmount);
+               
                checkIfIngredientNull = connection.prepareStatement("select * from user_ingredients"
                        + " WHERE user_id = " +uid+ " AND ingredient_id = " + allIngredientsByID.get(randIndex));
                ResultSet result2 = checkIfIngredientNull.executeQuery();
@@ -126,12 +134,90 @@ public class DBHandler {
                     updateFoundIngredients.setInt(3, allIngredientsByID.get(randIndex));
                     updateFoundIngredients.executeUpdate();
                }
+               
              //  updateFoundIngredients = connection.prepareStatement();
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
         return quest;
+    }
+    
+   
+    public ArrayList<Potion> fetchAllUserPotions(int uid){
+        ArrayList<Potion> allUserPotions = new ArrayList<>();
+        
+        try{
+            getAllUserPotions = connection.prepareStatement("select * from user_potions "
+                    + "WHERE user_id = " + uid);
+            ResultSet result = getAllUserPotions.executeQuery();
+            
+            while(result.next()){
+                Potion p = getPotionById(result.getInt("potions_id"));
+                p.setAmount(result.getInt("amount"));
+                allUserPotions.add(p);
+            }
+            
+        } catch(Exception e){
+            e.printStackTrace();
+        }
+        
+        
+        return allUserPotions;
+    }
+    
+    // 
+    public Potion getPotionById(int pid) {
+        Potion p = new Potion();
+        try {
+            getPotionFromID = connection.prepareStatement("select * from potions "
+                    + "WHERE id = " + pid);
+            ResultSet result = getPotionFromID.executeQuery();
+            
+            if (result.next()) {
+                p = new Potion(result.getInt("id"), result.getString("name"),
+                        result.getInt("ingr1_id"), result.getInt("ingr2_id"), 
+                        result.getInt("sell_price"));
+                if ((result.getString("ingr3_id")) != null) {
+                    p.setIngredient3ID(result.getInt("ingr3_id"));
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return p;
+    }
+    
+    public void sellPotion(int uid, Potion p){
+        try{
+            updateGold = connection.prepareStatement("UPDATE users SET gold = gold+? WHERE id = ?");
+            updateGold.setInt(1, p.getSellPrice());
+            updateGold.setInt(2, uid);
+            updateGold.executeUpdate();
+            
+            updatePotionsSold = connection.prepareStatement("UPDATE users SET potions_sold = potions_sold+1 WHERE id = ?");
+            updatePotionsSold.setInt(1, uid);
+            updatePotionsSold.executeUpdate();
+            
+            if(p.getAmount() == 1){
+                updatePotionsAmount = connection.prepareStatement("DELETE FROM user_potions "
+                        + "WHERE user_id = ? AND potions_id = ?");
+                updatePotionsAmount.setInt(1, uid);
+                updatePotionsAmount.setInt(2, p.getId());
+                updatePotionsAmount.executeUpdate();
+            } else {
+                updatePotionsAmount = connection.prepareStatement("UPDATE user_potions SET amount = amount-1 "
+                        + "WHERE user_id = ? AND potions_id = ?");
+                updatePotionsAmount.setInt(1, uid);
+                updatePotionsAmount.setInt(2, p.getId());
+                updatePotionsAmount.executeUpdate();
+            }
+            
+        } catch (Exception e){
+            e.printStackTrace();
+        }
     }
     
     public int getUserID(String username){

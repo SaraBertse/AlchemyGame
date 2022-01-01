@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project-private xmlns="http://www.netbeans.org/ns/project-private/1">
+    <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
+    <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
+        <group>
+            <file>file:/C:/Users/HP/Documents/NetBeansProjects/AlchemyGame/src/java/controller/MarketServlet.java</file>
+            <file>file:/C:/Users/HP/Documents/NetBeansProjects/AlchemyGame/src/java/model/DBHandler.java</file>
+            <file>file:/C:/Users/HP/Documents/NetBeansProjects/AlchemyGame/web/main.jsp</file>
+            <file>file:/C:/Users/HP/Documents/NetBeansProjects/AlchemyGame/web/brew.jsp</file>
+            <file>file:/C:/Users/HP/Documents/NetBeansProjects/AlchemyGame/src/java/model/BattleItem.java</file>
+            <file>file:/C:/Users/HP/Documents/NetBeansProjects/AlchemyGame/web/index.html</file>
+            <file>file:/C:/Users/HP/Documents/NetBeansProjects/AlchemyGame/web/failedregister.html</file>
+            <file>file:/C:/Users/HP/Documents/NetBeansProjects/AlchemyGame/src/java/model/Quest.java</file>
+            <file>file:/C:/Users/HP/Documents/NetBeansProjects/AlchemyGame/web/quest.jsp</file>
+            <file>file:/C:/Users/HP/Documents/NetBeansProjects/AlchemyGame/src/java/model/Potion.java</file>
+            <file>file:/C:/Users/HP/Documents/NetBeansProjects/AlchemyGame/src/java/model/BrewingItem.java</file>
+            <file>file:/C:/Users/HP/Documents/NetBeansProjects/AlchemyGame/src/java/model/User.java</file>
+            <file>file:/C:/Users/HP/Documents/NetBeansProjects/AlchemyGame/src/java/controller/UserServlet.java</file>
+            <file>file:/C:/Users/HP/Documents/NetBeansProjects/AlchemyGame/src/java/controller/MainServlet.java</file>
+            <file>file:/C:/Users/HP/Documents/NetBeansProjects/AlchemyGame/web/market.jsp</file>
+        </group>
+    </open-files>
+</project-private>
