@@ -8,6 +8,14 @@
         <servlet-name>MainServlet</servlet-name>
         <servlet-class>controller.MainServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>MarketServlet</servlet-name>
+        <servlet-class>controller.MarketServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>BrewingServlet</servlet-name>
+        <servlet-class>controller.BrewingServlet</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>UserServlet</servlet-name>
         <url-pattern>/UserServlet</url-pattern>
@@ -15,6 +23,14 @@
     <servlet-mapping>
         <servlet-name>MainServlet</servlet-name>
         <url-pattern>/MainServlet</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>MarketServlet</servlet-name>
+        <url-pattern>/MarketServlet</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>BrewingServlet</servlet-name>
+        <url-pattern>/BrewingServlet</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>

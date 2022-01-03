@@ -1,3 +1,7 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
+ */
 package controller;
 
 import java.io.IOException;
@@ -13,13 +17,12 @@ import javax.servlet.http.HttpSession;
 import model.DBHandler;
 import model.Ingredient;
 import model.Potion;
-import model.Quest;
 
 /**
  *
- * @author HP
+ * @author sarab
  */
-public class MainServlet extends HttpServlet {
+public class BrewingServlet extends HttpServlet {
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -38,10 +41,10 @@ public class MainServlet extends HttpServlet {
             out.println("<!DOCTYPE html>");
             out.println("<html>");
             out.println("<head>");
-            out.println("<title>Servlet MainServlet</title>");            
+            out.println("<title>Servlet BrewingServlet</title>");
             out.println("</head>");
             out.println("<body>");
-            out.println("<h1>Servlet MainServlet at " + request.getContextPath() + "</h1>");
+            out.println("<h1>Servlet BrewingServlet at " + request.getContextPath() + "</h1>");
             out.println("</body>");
             out.println("</html>");
         }
@@ -73,70 +76,62 @@ public class MainServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        processRequest(request, response);
         ServletContext application = request.getServletContext();
         HttpSession session = request.getSession(true);
         DBHandler dbh = (DBHandler) application.getAttribute("dbh");
         if (dbh == null) {
             dbh = new DBHandler();
         }
-        int uid = dbh.getUserID((String)application.getAttribute("username"));
-        
-        if ("brew".equals(request.getParameter("action"))) {
-            ArrayList<Integer> userRecipesIDs = dbh.getUserRecipes(uid);
-            ArrayList<Potion> userRecipes = new ArrayList();
 
-            for (int i = 0; i < userRecipesIDs.size(); i++) {
-                userRecipes.add(dbh.getPotionById(userRecipesIDs.get(i)));
-            }
-            session.setAttribute("userRecipes", userRecipes);
-       
-      
-            ArrayList<ArrayList<Ingredient>> ingredients = new ArrayList<>(userRecipesIDs.size());
-            for(int i=0; i < userRecipesIDs.size(); i++) {
-                ingredients.add(new ArrayList());}
- 
-            for(int i = 0; i < userRecipesIDs.size(); i++){
-                ingredients.get(i).add(dbh.getIngredientByID(userRecipes.get(i).getIngredient1ID()));
-                ingredients.get(i).add(dbh.getIngredientByID(userRecipes.get(i).getIngredient2ID()));
-                if (!(userRecipes.get(i).getIngredient3ID() == 0)){
-                    ingredients.get(i).add(dbh.getIngredientByID(userRecipes.get(i).getIngredient3ID()));
-                }
-            }
-            session.setAttribute("recipeIngredients", ingredients);
-            
-            ArrayList<Ingredient> userIngredients = new ArrayList<>();
-            userIngredients = dbh.fetchAllUserIngredients(uid);
-            session.setAttribute("userIngredients", userIngredients);
-            
-            RequestDispatcher rd = request.getRequestDispatcher("/brew.jsp");
+        int uid = dbh.getUserID((String) application.getAttribute("username"));
 
-            rd.forward(request, response);
+        ArrayList<Integer> userRecipesIDs = dbh.getUserRecipes(uid);
+        ArrayList<Potion> userRecipes = new ArrayList();
 
-        } else if ("equipment".equals(request.getParameter("action"))) {
-            RequestDispatcher rd = request.getRequestDispatcher("/equipment.jsp");
-
-            rd.forward(request, response);
-        } else if ("market".equals(request.getParameter("action"))) {
-            ArrayList<Potion> allUserPotions = dbh.fetchAllUserPotions(uid);
-            session.setAttribute("userPotions", allUserPotions);
-            RequestDispatcher rd = request.getRequestDispatcher("/market.jsp");
-            rd.forward(request, response);
-            
-        } else if ("quest".equals(request.getParameter("action"))) {
-            RequestDispatcher rd = request.getRequestDispatcher("/quest.jsp");
-            Quest questRewards = dbh.goQuesting(3, uid);
-            session.setAttribute("questRewards", questRewards);
-            rd.forward(request, response);
-        } else {
-            RequestDispatcher rd = request.getRequestDispatcher("/main.jsp");
-
-            rd.forward(request, response);
+        for (int i = 0; i < userRecipesIDs.size(); i++) {
+            userRecipes.add(dbh.getPotionById(userRecipesIDs.get(i)));
         }
-            
-        //Inventory
-        //Cauldron upgrade
-        //Recipe book
-        //Stats
+        session.setAttribute("userRecipes", userRecipes);
+
+        ArrayList<ArrayList<Ingredient>> ingredients = new ArrayList<>(userRecipesIDs.size());
+        for (int i = 0; i < userRecipesIDs.size(); i++) {
+            ingredients.add(new ArrayList());
+        }
+
+        for (int i = 0; i < userRecipesIDs.size(); i++) {
+            ingredients.get(i).add(dbh.getIngredientByID(userRecipes.get(i).getIngredient1ID()));
+            ingredients.get(i).add(dbh.getIngredientByID(userRecipes.get(i).getIngredient2ID()));
+            if (!(userRecipes.get(i).getIngredient3ID() == 0)) {
+                ingredients.get(i).add(dbh.getIngredientByID(userRecipes.get(i).getIngredient3ID()));
+            }
+        }
+        session.setAttribute("recipeIngredients", ingredients);
+
+        ArrayList<Ingredient> userIngredients = new ArrayList<>();
+        userIngredients = dbh.fetchAllUserIngredients(uid);
+        session.setAttribute("userIngredients", userIngredients);
+
+        ArrayList<Potion> potions = (ArrayList<Potion>) session.getAttribute("userPotions");
+ 
+            String str = "brew";
+            for (int i = 0; i < potions.size(); i++) {
+                str = "brew";
+                str += i;
+                if (str.equals(request.getParameter("action"))) {
+                    dbh.brew(uid, potions.get(i));
+
+                    potions = dbh.fetchAllUserPotions(uid);
+                    session.setAttribute("userPotions", potions);
+                    
+                    RequestDispatcher rd = request.getRequestDispatcher("/brew.jsp");
+
+                    rd.forward(request, response);
+                }
+           
+        }
+
+   processRequest(request, response);
     }
 
     /**
