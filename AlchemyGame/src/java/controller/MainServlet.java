@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
- */
 package controller;
 
 import java.io.IOException;
@@ -15,6 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import model.DBHandler;
+import model.Ingredient;
 import model.Potion;
 import model.Quest;
 
@@ -76,14 +73,53 @@ public class MainServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        
         ServletContext application = request.getServletContext();
         HttpSession session = request.getSession(true);
         DBHandler dbh = (DBHandler) application.getAttribute("dbh");
         if (dbh == null) {
             dbh = new DBHandler();
         }
-  
+        int uid = dbh.getUserID((String)application.getAttribute("username"));
+        
         if ("brew".equals(request.getParameter("action"))) {
+            ArrayList<Integer> userRecipesIDs = dbh.getUserRecipes(uid);
+            ArrayList<Potion> userRecipes = new ArrayList();
+
+            ArrayList<Potion> allUserPotions = dbh.fetchAllUserPotions(uid);
+            session.setAttribute("userPotions", allUserPotions);
+            
+            
+            for (int i = 0; i < userRecipesIDs.size(); i++) {
+                userRecipes.add(dbh.getPotionById(userRecipesIDs.get(i)));
+                for(int j = 0; j < allUserPotions.size(); j++){
+                    if(userRecipes.get(i).getId() == allUserPotions.get(j).getId()){
+                        userRecipes.get(i).setAmount(allUserPotions.get(j).getAmount());
+                    }
+                }
+            }
+            session.setAttribute("userRecipes", userRecipes);
+            
+            
+       
+      
+            ArrayList<ArrayList<Ingredient>> ingredients = new ArrayList<>(userRecipesIDs.size());
+            for(int i=0; i < userRecipesIDs.size(); i++) {
+                ingredients.add(new ArrayList());}
+ 
+            for(int i = 0; i < userRecipesIDs.size(); i++){
+                ingredients.get(i).add(dbh.getIngredientByID(userRecipes.get(i).getIngredient1ID()));
+                ingredients.get(i).add(dbh.getIngredientByID(userRecipes.get(i).getIngredient2ID()));
+                if (!(userRecipes.get(i).getIngredient3ID() == 0)){
+                    ingredients.get(i).add(dbh.getIngredientByID(userRecipes.get(i).getIngredient3ID()));
+                }
+            }
+            session.setAttribute("recipeIngredients", ingredients);
+            
+            ArrayList<Ingredient> userIngredients = new ArrayList<>();
+            userIngredients = dbh.fetchAllUserIngredients(uid);
+            session.setAttribute("userIngredients", userIngredients);
+            
             RequestDispatcher rd = request.getRequestDispatcher("/brew.jsp");
 
             rd.forward(request, response);
@@ -93,15 +129,30 @@ public class MainServlet extends HttpServlet {
 
             rd.forward(request, response);
         } else if ("market".equals(request.getParameter("action"))) {
-            ArrayList<Potion> allUserPotions = dbh.fetchAllUserPotions(
-                    dbh.getUserID((String)application.getAttribute("username")));
+            ArrayList<Potion> allUserPotions = dbh.fetchAllUserPotions(uid);
             session.setAttribute("userPotions", allUserPotions);
+            
+            // ## add recipes available to buy ##
+            // fetch all recipes
+            // fetch user recipes
+            // remove user recipes from list of all recipes
+            // send
+            ArrayList<Potion> allPotions = dbh.fetchAllPotions();
+            ArrayList<Integer> userRecipes = dbh.getUserRecipes(uid);
+            for(int i = 0; i < allPotions.size(); i++){
+                for(int j = 0; j < userRecipes.size(); j++){
+                    if(allPotions.get(i).getId() == userRecipes.get(j)){
+                        allPotions.remove(i);
+                    }
+                }
+            }
+            session.setAttribute("availableRecipes", allPotions);
+            
             RequestDispatcher rd = request.getRequestDispatcher("/market.jsp");
             rd.forward(request, response);
             
         } else if ("quest".equals(request.getParameter("action"))) {
             RequestDispatcher rd = request.getRequestDispatcher("/quest.jsp");
-            int uid = dbh.getUserID((String)application.getAttribute("username"));
             Quest questRewards = dbh.goQuesting(3, uid);
             session.setAttribute("questRewards", questRewards);
             rd.forward(request, response);

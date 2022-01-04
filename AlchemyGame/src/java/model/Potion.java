@@ -17,6 +17,8 @@ public class Potion {
     int ingredient3ID = 0;
     int amount = 0;
     int sellPrice = 0;
+    int recipePrice = 0;
+
     
     // fixes error in dbhandler DONT TOUCH!!
     public Potion(){
@@ -85,5 +87,13 @@ public class Potion {
 
     public void setSellPrice(int sellPrice) {
         this.sellPrice = sellPrice;
+    }
+    
+    public int getRecipePrice() {
+        return recipePrice;
+    }
+
+    public void setRecipePrice(int recipePrice) {
+        this.recipePrice = recipePrice;
     }
 }

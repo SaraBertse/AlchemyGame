@@ -6,7 +6,7 @@ package model;
 
 /**
  *
- * @author HP
+ * @author Sara Bertse and Jacob Dwyer
  */
 public class Quest {
     String monster = "rats";

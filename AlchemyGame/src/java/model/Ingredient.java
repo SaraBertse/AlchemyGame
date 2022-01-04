@@ -12,6 +12,8 @@ public class Ingredient {
     int id = 0;
     String name = "";
     int rarity = 0;
+    int amount = 0;
+
 
     public int getId() {
         return id;
@@ -35,6 +37,14 @@ public class Ingredient {
 
     public void setRarity(int rarity) {
         this.rarity = rarity;
+    }
+    
+        public int getAmount() {
+        return amount;
+    }
+
+    public void setAmount(int amount) {
+        this.amount = amount;
     }
     
 }

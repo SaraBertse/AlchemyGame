@@ -14,6 +14,7 @@
         <title>Market</title>
         <%
             ArrayList<Potion> potions = (ArrayList<Potion>)session.getAttribute("userPotions");
+            ArrayList<Potion> recipes = (ArrayList<Potion>)session.getAttribute("availableRecipes");
         %>
     </head>
     <body>
@@ -30,6 +31,27 @@
             <td><%= p.getSellPrice()%></td>
             <td><input type="hidden" name="action" value="sell<%=i%>">
             <input type="submit" value="Sell"></td>
+            </form>
+        </tr>
+
+
+        <%
+            i++;
+            }
+        %>
+        </table>
+        <p/>
+        <table><tr><th>Recipe</th><th>Cost</th><th>Buy</th></tr>
+        <%
+            i = 0;
+            for(Potion r : recipes){
+        %>
+        <tr>
+            <form method="post" action="/AlchemyGame/MarketServlet">
+            <td><%= r.getName() %></td>
+            <td><%= r.getRecipePrice() %></td>
+            <td><input type="hidden" name="action" value="buy<%=i%>">
+            <input type="submit" value="Buy"></td>
             </form>
         </tr>
 
