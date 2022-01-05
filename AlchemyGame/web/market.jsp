@@ -7,6 +7,7 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@page import="java.util.*" %>
 <%@page import="model.Potion" %>
+<%@page import="model.BattleItem" %>
 <!DOCTYPE html>
 <html>
     <head>
@@ -60,6 +61,34 @@
             i++;
             }
         %>
+      </table>
+        <table><tr><th>Name</th><th>Type</th><th>Effect</th><th>Purchase price</th></tr>
+                   <%
+
+        ArrayList<BattleItem> battleItems = (ArrayList<BattleItem>)session.getAttribute("allBattleItems");
+
+        i=0;
+            for(BattleItem b : battleItems){
+        %>
+        <tr>
+            <form method="post" action="/AlchemyGame/MarketServlet">
+            <td><%= b.getName() %></td>
+            <td><%= b.getType() %></td>
+            <td><%= b.getEffect() %></td>
+            <td><%= b.getPurchasePrice() %></td>
+            <td><input type="hidden" name="action" value="buyeq<%=i%>">
+            <input type="submit" value="Buy"></td>
+            </form>
+        </tr>
+        <%
+            i++;
+            }
+        %>
         </table>
+                <p>
+            <form method="post" action="/AlchemyGame/MarketServlet">
+            <input type="hidden" name="action" value="back">
+            <input type="submit" value="Back">
+            </form>
     </body>
 </html>

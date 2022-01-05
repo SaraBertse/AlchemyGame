@@ -1,7 +1,7 @@
 <%-- 
     Document   : brew
     Created on : 29 Dec 2021, 16:47:18
-    Author     : Sara Bertse and Jacob Dwyer
+    Author     : sarab
 --%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@page import="java.util.*" %>
@@ -22,7 +22,7 @@
         <table><tr><th>Potion</th><th>Ingredient 1</th><th>Ingredient 2</th><th>Ingredient 3</th><th>Sell Price</th></tr>
         <%
             //WANT: Display amount as well. potionsReipes =/= userPotions (amount). Pröblem bröther.
-            for(int i = 0; i < potions.size(); i++){
+            for(int i = 0; i<potions.size();i++){
         %>
             
         <tr>
@@ -37,10 +37,13 @@
             <input type="submit" value="Brew"></td>
             </form>
         </tr>
+
+
         <%
             } 
         %>
         </table>
+        
         <p>
         <br>
         <table><tr><th>Ingredient name</th><th>Rarity</th><th>Amount</th>
@@ -55,8 +58,13 @@
             </tr>
             <% 
                 }
-            %>
+                %>
         </table>
+        <p>
+            <form method="post" action="/AlchemyGame/BrewingServlet">
+            <input type="hidden" name="action" value="back">
+            <input type="submit" value="Back">
+            </form>
          
     </body>
 </html>

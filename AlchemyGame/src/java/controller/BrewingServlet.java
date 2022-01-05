@@ -115,22 +115,29 @@ public class BrewingServlet extends HttpServlet {
         session.setAttribute("userIngredients", userIngredients);
 
         ArrayList<Potion> potions = (ArrayList<Potion>) session.getAttribute("userRecipes");
-
         
+        ArrayList<Potion> allUserPotions = dbh.fetchAllUserPotions(uid);
         // BUG: when amount=1, doesnt increase potion amount, adds new row instead
         String str = "brew";
         for (int i = 0; i < potions.size(); i++) {
             str = "brew";
             str += i;
+
+            //Don't touch it works.
             if (str.equals(request.getParameter("action"))) {
+                for (int j = 0; j < potions.size(); j++) {
+                    for (int k = 0; k < allUserPotions.size(); k++) {
+                        if (potions.get(j).getId() == allUserPotions.get(k).getId()) {
+                            potions.get(j).setAmount(allUserPotions.get(k).getAmount());
+                        }
+                    }
+                }
+                session.setAttribute("userRecipes", potions);
                 dbh.brew(uid, potions.get(i));
 
                 potions = dbh.fetchAllUserPotions(uid);
-                //session.setAttribute("userRecipes", potions); //userPotions
+    
                 session.setAttribute("userPotions", potions);
-                
-                // didnt fix
-                session.setAttribute("userRecipes", (ArrayList<Potion>) session.getAttribute("userRecipes")); //userPotions
                 
                 userIngredients = dbh.fetchAllUserIngredients(uid);
                 session.setAttribute("userIngredients", userIngredients);
@@ -140,6 +147,11 @@ public class BrewingServlet extends HttpServlet {
                 rd.forward(request, response);
             }
 
+        }
+        if ("back".equals(request.getParameter("action"))) {
+                RequestDispatcher rd = request.getRequestDispatcher("/main.jsp");
+
+                rd.forward(request, response);
         }
 
         RequestDispatcher rd = request.getRequestDispatcher("/brew.jsp");

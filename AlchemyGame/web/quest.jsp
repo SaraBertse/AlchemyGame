@@ -30,5 +30,11 @@
         <p>You have slain a pack of <%=monster%>s!</P>
         <br>
         <p>You reward is <%=nrIngr1%> <%=ingr1%>!</P>
+        
+        <p>
+        <form method="post" action="/AlchemyGame/MainServlet">
+        <input type="hidden" name="action" value="back">
+        <input type="submit" value="Back">
+        </form>
     </body>
 </html>

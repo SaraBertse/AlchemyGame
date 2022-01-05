@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import model.BattleItem;
 import model.DBHandler;
 import model.Ingredient;
 import model.Potion;
@@ -148,6 +149,10 @@ public class MainServlet extends HttpServlet {
             }
             session.setAttribute("availableRecipes", allPotions);
             
+            //fetches all battle items
+            ArrayList<BattleItem> allBattleItems = dbh.fetchAllBattleItems();
+            session.setAttribute("allBattleItems",allBattleItems);
+            
             RequestDispatcher rd = request.getRequestDispatcher("/market.jsp");
             rd.forward(request, response);
             
@@ -156,6 +161,9 @@ public class MainServlet extends HttpServlet {
             Quest questRewards = dbh.goQuesting(3, uid);
             session.setAttribute("questRewards", questRewards);
             rd.forward(request, response);
+      /*  } else if ("back".equals(request.getParameter("action"))){
+            RequestDispatcher rd = request.getRequestDispatcher("/main.jsp");
+            rd.forward(request, response);    */  
         } else {
             RequestDispatcher rd = request.getRequestDispatcher("/main.jsp");
 

@@ -16,6 +16,10 @@
         <servlet-name>BrewingServlet</servlet-name>
         <servlet-class>controller.BrewingServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>EquipmentServlet</servlet-name>
+        <servlet-class>controller.EquipmentServlet</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>UserServlet</servlet-name>
         <url-pattern>/UserServlet</url-pattern>
@@ -31,6 +35,10 @@
     <servlet-mapping>
         <servlet-name>BrewingServlet</servlet-name>
         <url-pattern>/BrewingServlet</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>EquipmentServlet</servlet-name>
+        <url-pattern>/EquipmentServlet</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>

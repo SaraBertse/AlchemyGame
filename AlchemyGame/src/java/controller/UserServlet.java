@@ -22,7 +22,7 @@ import model.User;
 
 /**
  *
- * @author HP
+ * @author sarab
  */
 public class UserServlet extends HttpServlet {
     String password="notworking";

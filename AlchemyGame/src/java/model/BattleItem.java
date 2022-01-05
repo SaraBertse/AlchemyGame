@@ -15,6 +15,20 @@ public class BattleItem {
     int purchasePrice = 0;
     int sellPrice = 0;
     String type = "";
+    int amount=0;
+    
+    public BattleItem(){
+        
+    }
+    
+    public BattleItem(int id, String name, int effect, int purchasePrice, int sellPrice, String type){
+        this.id = id;
+        this.name = name;
+        this.effect = effect;
+        this.purchasePrice = purchasePrice;
+        this.sellPrice = sellPrice;
+        this.type = type;
+    }
 
     public int getId() {
         return id;
@@ -62,5 +76,13 @@ public class BattleItem {
 
     public void setType(String type) {
         this.type = type;
+    }
+    
+    public int getAmount() {
+        return amount;
+    }
+
+    public void setAmount(int amount) {
+        this.amount = amount;
     }
 }

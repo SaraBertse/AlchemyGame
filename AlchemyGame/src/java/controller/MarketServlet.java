@@ -14,6 +14,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import model.BattleItem;
 import model.DBHandler;
 import model.Potion;
 
@@ -81,26 +82,25 @@ public class MarketServlet extends HttpServlet {
         if (dbh == null) {
             dbh = new DBHandler();
         }
-        
-        int uid = dbh.getUserID((String)application.getAttribute("username"));
-        
-        
-        ArrayList<Potion> potions = (ArrayList<Potion>)session.getAttribute("userPotions");
+
+        int uid = dbh.getUserID((String) application.getAttribute("username"));
+
+        ArrayList<Potion> potions = (ArrayList<Potion>) session.getAttribute("userPotions");
         String str = "sell";
-        for(int i = 0; i < potions.size(); i++){
+        for (int i = 0; i < potions.size(); i++) {
             str = "sell";
             str += i;
             if (str.equals(request.getParameter("action"))) {
                 dbh.sellPotion(uid, potions.get(i));
-                
+
                 potions = dbh.fetchAllUserPotions(uid);
                 session.setAttribute("userPotions", potions);
-                
+
                 RequestDispatcher rd = request.getRequestDispatcher("/market.jsp");
                 rd.forward(request, response);
             }
-        } 
-        
+        }
+
         ArrayList<Potion> allPotions = dbh.fetchAllPotions();
         String buyStr = "buy";
         for (int i = 0; i < allPotions.size(); i++) {
@@ -117,19 +117,41 @@ public class MarketServlet extends HttpServlet {
                         }
                     }
                 }
-                
+
                 //buy
                 dbh.unlockRecipe(uid, allPotions.get(i));
                 allPotions.remove(i); // update available potions list
-                
+
                 session.setAttribute("availableRecipes", allPotions);
 
                 RequestDispatcher rd = request.getRequestDispatcher("/market.jsp");
                 rd.forward(request, response);
             }
+
         }
-        
-        processRequest(request, response);
+
+        String buyeqStr = "buyeq";
+        ArrayList<BattleItem> allBattleItems = (ArrayList<BattleItem>) session.getAttribute("allBattleItems");
+        for (int i = 0; i < allBattleItems.size(); i++) {
+            buyeqStr = "buyeq";
+            buyeqStr += i;
+            if (buyeqStr.equals(request.getParameter("action"))) {
+                //  dbh.sellPotion(uid, potions.get(i));
+
+                //  potions = dbh.fetchAllUserPotions(uid);
+                //  session.setAttribute("userPotions", potions);
+                RequestDispatcher rd = request.getRequestDispatcher("/market.jsp");
+                rd.forward(request, response);
+
+            } 
+            if ("back".equals(request.getParameter("action"))) {
+                RequestDispatcher rd = request.getRequestDispatcher("/main.jsp");
+
+                rd.forward(request, response);
+            }
+
+            processRequest(request, response);
+        }
     }
 
     /**
