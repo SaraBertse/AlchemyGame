@@ -64,9 +64,7 @@
       </table>
         <table><tr><th>Name</th><th>Type</th><th>Effect</th><th>Purchase price</th></tr>
                    <%
-
         ArrayList<BattleItem> battleItems = (ArrayList<BattleItem>)session.getAttribute("allBattleItems");
-
         i=0;
             for(BattleItem b : battleItems){
         %>

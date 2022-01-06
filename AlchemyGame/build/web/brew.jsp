@@ -1,7 +1,7 @@
 <%-- 
     Document   : brew
     Created on : 29 Dec 2021, 16:47:18
-    Author     : sarab
+    Author     : Sara Bertse and Jacob Dwyer
 --%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@page import="java.util.*" %>
@@ -58,7 +58,7 @@
             </tr>
             <% 
                 }
-                %>
+            %>
         </table>
         <p>
             <form method="post" action="/AlchemyGame/BrewingServlet">

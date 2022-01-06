@@ -6,14 +6,21 @@ package controller;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import model.BattleItem;
+import model.DBHandler;
+import model.Potion;
 
 /**
  *
- * @author sarab
+ * @author HP
  */
 public class EquipmentServlet extends HttpServlet {
 
@@ -34,7 +41,7 @@ public class EquipmentServlet extends HttpServlet {
             out.println("<!DOCTYPE html>");
             out.println("<html>");
             out.println("<head>");
-            out.println("<title>Servlet EquipmentServlet</title>");            
+            out.println("<title>Servlet EquipmentServlet</title>");
             out.println("</head>");
             out.println("<body>");
             out.println("<h1>Servlet EquipmentServlet at " + request.getContextPath() + "</h1>");
@@ -69,7 +76,59 @@ public class EquipmentServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-    
+
+        ServletContext application = request.getServletContext();
+        HttpSession session = request.getSession(true);
+        DBHandler dbh = (DBHandler) application.getAttribute("dbh");
+        if (dbh == null) {
+            dbh = new DBHandler();
+        }
+
+        int uid = dbh.getUserID((String) application.getAttribute("username"));
+
+        // list all items that can be equipped: user_battle_items
+        // when press EQUIP, remove from list and in db user_battle_items,
+        //     add to equipment list and db user_equipment
+        // when equip, automatically unequip same type
+        // (if time, make possible uneqip without equipping)
+        ArrayList<BattleItem> userInventory = (ArrayList<BattleItem>) session.getAttribute("userInventory");
+        String eqStr = "equip";
+        for (int i = 0; i < userInventory.size(); i++) {
+            eqStr = "equip";
+            eqStr += i;
+            if (eqStr.equals(request.getParameter("action"))) {
+
+                dbh.equip(uid, userInventory.get(i));
+
+                int[] eqArr = dbh.fetchUserEquipment(uid);
+                String[] types = {"", "head", "chest", "hands", "legs", "feet", "weapon", "shield"};
+
+                ArrayList<BattleItem> userEquipment = new ArrayList<>();
+                BattleItem dummyBi = new BattleItem(0, "EMPTY", 0, 0, 0, "EMPTY");
+                
+                int j = 1;
+                while (j < 8) {
+                    if (eqArr[j] != 0) {
+                        userEquipment.add(dbh.getBattleItemByID(eqArr[j]));
+                    } else {
+                        //BattleItem temp = dbh.getBattleItemByID(equipment[i]);
+                        dummyBi = new BattleItem(0, "EMPTY", 0, 0, 0, types[j]);
+                        userEquipment.add(dummyBi);
+
+                    }
+                    j++;
+                }
+                
+                dummyBi = new BattleItem(0, "EMPTY", 0, 0, 0, "EMPTY");
+                session.setAttribute("userEquipment", userEquipment);
+
+                RequestDispatcher rd = request.getRequestDispatcher("/equipment.jsp");
+                rd.forward(request, response);
+            }
+
+        }
+
+        // session.getAttribute("userinventory");
     }
 
     /**

@@ -15,7 +15,7 @@ public class BattleItem {
     int purchasePrice = 0;
     int sellPrice = 0;
     String type = "";
-    int amount=0;
+    int amount = 0;
     
     public BattleItem(){
         

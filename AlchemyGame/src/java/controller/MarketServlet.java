@@ -20,7 +20,7 @@ import model.Potion;
 
 /**
  *
- * @author HP
+ * @author Sara Bertse and Jacob Dwyer
  */
 public class MarketServlet extends HttpServlet {
 
@@ -132,14 +132,24 @@ public class MarketServlet extends HttpServlet {
 
         String buyeqStr = "buyeq";
         ArrayList<BattleItem> allBattleItems = (ArrayList<BattleItem>) session.getAttribute("allBattleItems");
+        ArrayList<BattleItem> userBattleItems = dbh.fetchAllUserBattleItems(uid);
+        
         for (int i = 0; i < allBattleItems.size(); i++) {
             buyeqStr = "buyeq";
             buyeqStr += i;
             if (buyeqStr.equals(request.getParameter("action"))) {
-                //  dbh.sellPotion(uid, potions.get(i));
-
-                //  potions = dbh.fetchAllUserPotions(uid);
-                //  session.setAttribute("userPotions", potions);
+                
+                for(BattleItem all : allBattleItems){
+                    
+                    for(BattleItem userItems : userBattleItems){
+                        if(all.getId() == userItems.getId()){
+                            all.setAmount(userItems.getAmount());
+                        }
+                    }
+                }
+                
+                dbh.buyBattleItem(uid, allBattleItems.get(i));
+                
                 RequestDispatcher rd = request.getRequestDispatcher("/market.jsp");
                 rd.forward(request, response);
 
@@ -150,7 +160,7 @@ public class MarketServlet extends HttpServlet {
                 rd.forward(request, response);
             }
 
-            processRequest(request, response);
+            //processRequest(request, response);
         }
     }
 

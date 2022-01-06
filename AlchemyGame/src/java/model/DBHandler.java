@@ -33,9 +33,13 @@ public class DBHandler {
        private PreparedStatement changeGold;
        private PreparedStatement updatePotionsSold;
        private PreparedStatement updatePotionsAmount;
+       private PreparedStatement updateUserBattleItems;
        private PreparedStatement getUserRecipes;
        private PreparedStatement unlockRecipe;
        private PreparedStatement getAllBattleItems;
+       private PreparedStatement getAllUserBattleItems;
+       private PreparedStatement getUserEquipment;
+       private PreparedStatement updateUserEquipment;
        
   
 
@@ -52,8 +56,8 @@ public class DBHandler {
        }
          
        public static void connToDB(){
-          try{
-           connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/alchemy","admin", "admin");
+          try{ // /alchemy_2","root", "admin"
+           connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/alchemy_2","root", "admin");
            System.out.println("connection successful");
           }
           catch(Exception e){
@@ -213,7 +217,69 @@ public class DBHandler {
         return allUserIngredients;
     }
     
+    public ArrayList<BattleItem> fetchAllBattleItems() {
+        ArrayList<BattleItem> allBattleItems = new ArrayList<>();
+        
+        try {
+            BattleItem bi = new BattleItem();
+            getAllBattleItems = connection.prepareStatement("SELECT * FROM battle_items");
+            ResultSet result = getAllBattleItems.executeQuery();
+            while (result.next()) {
+                bi = getBattleItemByID(result.getInt("id"));
+                allBattleItems.add(bi);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return allBattleItems;
+    }
     
+    public ArrayList<BattleItem> fetchAllUserBattleItems(int uid) {
+        ArrayList<BattleItem> allUserBattleItems = new ArrayList<>();
+        
+        try {
+            BattleItem bi;
+            getAllUserBattleItems = connection.prepareStatement("SELECT * FROM user_battle_items "
+                    + "WHERE user_id = " + uid);
+            ResultSet result = getAllUserBattleItems.executeQuery();
+            while (result.next()) {
+                bi = getBattleItemByID(result.getInt("battle_item_id"));
+                bi.setAmount(result.getInt("amount"));
+                allUserBattleItems.add(bi);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return allUserBattleItems;
+    }
+    
+    public int[] fetchUserEquipment(int uid){
+        int[] equipment = new int[9];
+        
+        try {
+            getUserEquipment = connection.prepareStatement("SELECT * FROM user_equipment "
+                    + "WHERE user_id = " + uid);
+            ResultSet result = getUserEquipment.executeQuery();
+            if(result.next()) {
+                equipment[0] = result.getInt("user_id");
+                equipment[1] = result.getInt("head");
+                equipment[2] = result.getInt("chest");
+                equipment[3] = result.getInt("hands");
+                equipment[4] = result.getInt("legs");
+                equipment[5] = result.getInt("feet");
+                equipment[6] = result.getInt("weapon");
+                equipment[7] = result.getInt("shield");
+                equipment[8] = result.getInt("cauldron");
+            }
+            else{
+                equipment[0] = 0;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
+        return equipment;
+    }
     
     // 
     public Potion getPotionById(int pid) {
@@ -314,6 +380,33 @@ public class DBHandler {
         
     }
     
+    public void equip(int uid, BattleItem bi){ // bi = item being equipped
+        
+        // if amount of bi in user_battle_items is 1, delete from there
+        // else, amount-1
+        // if equipped item id doesnt exit in user_battle_items,
+        //      insert into user_battle_items the equipped item
+        // else, amount+1
+        
+        // check type, update user_equipment at type with bi id
+        // 
+        try{
+            // update user_battle_items
+            //updateUserBattleItems = connection.prepareStatement("");
+            
+            
+            // add to user_equipment
+            updateUserEquipment = connection.prepareStatement("UPDATE user_equipment "
+                    + "SET " + bi.getType() + " = ? WHERE user_id = ?");
+            updateUserEquipment.setInt(1, bi.getId()); 
+            updateUserEquipment.setInt(2, uid);
+            updateUserEquipment.executeUpdate();
+            
+        } catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+    
     public void updateIngredientsList(int uid, Potion p) {
         try {
             ArrayList<Ingredient> ingredients = fetchAllUserIngredients(uid);
@@ -368,6 +461,34 @@ public class DBHandler {
 
     }
     
+    //update user_battle_items
+    //
+    //update gold
+    public void buyBattleItem(int uid, BattleItem bi){
+        
+        try {
+            if (bi.getAmount() == 0) {
+                updateUserBattleItems = connection.prepareStatement("INSERT INTO "
+                        + "user_battle_items (user_id,battle_item_id,amount) VALUES (?,?,?)");
+                updateUserBattleItems.setInt(3, 1);
+                //lägg till rad 280+281 vid knas
+            } else {
+                updateUserBattleItems = connection.prepareStatement("UPDATE user_battle_items SET amount = amount+1 "
+                        + "WHERE user_id = ? AND battle_item_id = ?");
+            }
+            updateUserBattleItems.setInt(1, uid);
+            updateUserBattleItems.setInt(2, bi.getId()); 
+            updateUserBattleItems.executeUpdate();
+            
+            decreaseGold(uid, bi.getPurchasePrice());
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
+    }
+    
+    
     // used when buying a potion recipe
     public void unlockRecipe(int uid, Potion p){
         try{
@@ -420,23 +541,6 @@ public class DBHandler {
         catch(Exception e){
             e.printStackTrace();
         }
-    }
-    
-    public ArrayList<BattleItem> fetchAllBattleItems() {
-
-        ArrayList<BattleItem> allBattleItems = new ArrayList<>();
-        try {
-            BattleItem bi = new BattleItem();
-            getAllBattleItems = connection.prepareStatement("SELECT * FROM battle_items");
-            ResultSet result = getAllBattleItems.executeQuery();
-            while (result.next()) {
-                bi = getBattleItemByID(result.getInt("id"));
-                allBattleItems.add(bi);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return allBattleItems;
     }
     
     public BattleItem getBattleItemByID(int id) {

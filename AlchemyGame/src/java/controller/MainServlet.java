@@ -126,9 +126,48 @@ public class MainServlet extends HttpServlet {
             rd.forward(request, response);
 
         } else if ("equipment".equals(request.getParameter("action"))) {
+            // list all items that can be equipped: user_battle_items
+            // when press EQUIP, remove from list and in db user_battle_items,
+            //     add to equipment list and db user_equipment
+            // when equip, automatically unequip same type
+            // (if time, make possible uneqip without equipping)
+            
+            ArrayList<BattleItem> userInventory = dbh.fetchAllUserBattleItems(uid);
+            session.setAttribute("userInventory", userInventory);
+            
+            int[] equipment = dbh.fetchUserEquipment(uid);
+            String[] types = {"","head", "chest", "hands", "legs", "feet", "weapon", "shield"};
+            
+            ArrayList<BattleItem> userEquipment = new ArrayList<>();
+            int i = 1;
+            BattleItem dummyBi = new BattleItem(0,"EMPTY",0,0,0,"EMPTY");
+            if (equipment[0] != 0) {
+                // excludes user_id (index 0) and cauldron (index 8)
+                while (i < 8) {
+                    if (equipment[i] != 0) {
+                        userEquipment.add(dbh.getBattleItemByID(equipment[i]));
+                    } else{
+                        //BattleItem temp = dbh.getBattleItemByID(equipment[i]);
+                        dummyBi = new BattleItem(0,"EMPTY",0,0,0,types[i]);
+                        userEquipment.add(dummyBi);
+                        
+                    }
+                    i++;
+                }
+                
+            }
+            else {
+                while (i < 9) {
+                    userEquipment.add(dummyBi);
+                    i++;
+                }
+            }
+            dummyBi = new BattleItem(0,"EMPTY",0,0,0,"EMPTY");
+            session.setAttribute("userEquipment", userEquipment);
+            
             RequestDispatcher rd = request.getRequestDispatcher("/equipment.jsp");
-
             rd.forward(request, response);
+            
         } else if ("market".equals(request.getParameter("action"))) {
             ArrayList<Potion> allUserPotions = dbh.fetchAllUserPotions(uid);
             session.setAttribute("userPotions", allUserPotions);

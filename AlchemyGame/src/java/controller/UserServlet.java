@@ -22,7 +22,7 @@ import model.User;
 
 /**
  *
- * @author sarab
+ * @author HP
  */
 public class UserServlet extends HttpServlet {
     String password="notworking";
@@ -151,6 +151,9 @@ public class UserServlet extends HttpServlet {
                         rd.forward(request, response);
                     }
                 }
+                
+                // initUser() method, add db tables where needed (like equipment)
+                
             dbh.registerUser(request.getParameter("regusername"),regpassword);
             rd = request.getRequestDispatcher("main.jsp");
             rd.forward(request, response);

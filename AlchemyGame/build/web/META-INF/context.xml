@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Context path="/AlchemyGame">
-<Resource name="jdbc/alchemy" auth="Container" type="javax.sql.DataSource"
+<Resource name="jdbc/alchemy_2" auth="Container" type="javax.sql.DataSource"
     maxActive="50" maxIdle="30" maxWait="10000"
-    username="admin" password="admin"
+    username="root" password="admin"
     driverClassName="com.mysql.cj.jdbc.Driver"
-    url="jdbc:mysql://localhost:3306/alchemy"/>
+    url="jdbc:mysql://localhost:3306/alchemy_2"/>
 </Context>
