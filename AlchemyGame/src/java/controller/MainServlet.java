@@ -21,6 +21,10 @@ import model.Quest;
  * @author HP
  */
 public class MainServlet extends HttpServlet {
+    //TODO:
+    //Implement so that you can't buy for more gold than you have
+    //Implement different quests, depending on armor/weapon effect
+    //Brewing equipment
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -90,7 +94,7 @@ public class MainServlet extends HttpServlet {
             ArrayList<Potion> allUserPotions = dbh.fetchAllUserPotions(uid);
             session.setAttribute("userPotions", allUserPotions);
             
-            
+            //Converts user recipe ID's to potions
             for (int i = 0; i < userRecipesIDs.size(); i++) {
                 userRecipes.add(dbh.getPotionById(userRecipesIDs.get(i)));
                 for(int j = 0; j < allUserPotions.size(); j++){
@@ -101,20 +105,34 @@ public class MainServlet extends HttpServlet {
             }
             session.setAttribute("userRecipes", userRecipes);
             
-            
+            //Kör checkaren och skicka in boolean som attribut,
+            //möjligtvis i en boolean array
        
-      
+            //Creates a multi-dimensional ArrayList to store ingredients of the potions
             ArrayList<ArrayList<Ingredient>> ingredients = new ArrayList<>(userRecipesIDs.size());
             for(int i=0; i < userRecipesIDs.size(); i++) {
-                ingredients.add(new ArrayList());}
+                ingredients.add(new ArrayList());
+            }
  
+            //String array that will be filled with "" or "disabled" for each user recipe,
+            //depending on if the user has the right ingredients or not.
+            //used in the JSP to gray out buttons when appropriate
+            String[] check = new String[userRecipesIDs.size()];
+            
+            //Fetches a list of ingredients for each potion
             for(int i = 0; i < userRecipesIDs.size(); i++){
                 ingredients.get(i).add(dbh.getIngredientByID(userRecipes.get(i).getIngredient1ID()));
                 ingredients.get(i).add(dbh.getIngredientByID(userRecipes.get(i).getIngredient2ID()));
                 if (!(userRecipes.get(i).getIngredient3ID() == 0)){
                     ingredients.get(i).add(dbh.getIngredientByID(userRecipes.get(i).getIngredient3ID()));
                 }
+                //Fills the String array
+                check[i]=dbh.checkIngrReq(uid,userRecipes.get(i).getIngredient1ID(), 
+                        userRecipes.get(i).getIngredient2ID(), 
+                        userRecipes.get(i).getIngredient3ID());
             }
+            session.setAttribute("checkIngrArray",check);
+            
             session.setAttribute("recipeIngredients", ingredients);
             
             ArrayList<Ingredient> userIngredients = new ArrayList<>();
@@ -203,6 +221,10 @@ public class MainServlet extends HttpServlet {
       /*  } else if ("back".equals(request.getParameter("action"))){
             RequestDispatcher rd = request.getRequestDispatcher("/main.jsp");
             rd.forward(request, response);    */  
+        } else if ("logout".equals(request.getParameter("action"))){
+            session.invalidate();  
+            RequestDispatcher rd = request.getRequestDispatcher("/index.html");
+            rd.forward(request, response);
         } else {
             RequestDispatcher rd = request.getRequestDispatcher("/main.jsp");
 

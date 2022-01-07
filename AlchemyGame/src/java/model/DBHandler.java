@@ -40,7 +40,6 @@ public class DBHandler {
        private PreparedStatement getAllUserBattleItems;
        private PreparedStatement getUserEquipment;
        private PreparedStatement updateUserEquipment;
-       
   
 
        int userCount;
@@ -56,8 +55,8 @@ public class DBHandler {
        }
          
        public static void connToDB(){
-          try{ // /alchemy_2","root", "admin"
-           connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/alchemy_2","root", "admin");
+          try{
+           connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/alchemy","admin", "admin");
            System.out.println("connection successful");
           }
           catch(Exception e){
@@ -66,7 +65,7 @@ public class DBHandler {
           }
        }
        
-  public User[] findUsers() {
+ public User[] findUsers() {
         try {
             getUserCount = connection.prepareStatement("SELECT COUNT(*) FROM users");
             ResultSet countResult = getUserCount.executeQuery();
@@ -390,11 +389,36 @@ public class DBHandler {
         
         // check type, update user_equipment at type with bi id
         // 
-        try{
-            // update user_battle_items
-            //updateUserBattleItems = connection.prepareStatement("");
-            
-            
+        try{               
+            //Add unequipped item to user_battle_items;
+            int[] equipment = fetchUserEquipment(uid);
+            for(int i = 1; i < 8; i++){
+                if(bi.getType().equals(getBattleItemByID(equipment[i]).getType())){
+                    updateUserBattleItems = connection.prepareStatement("INSERT INTO user_battle_items " 
+                        + "(user_id, battle_item_id,amount) VALUES (?,?,1) ON DUPLICATE KEY UPDATE "
+                        + "amount=amount+1");
+                    updateUserBattleItems.setInt(1, uid);
+                    updateUserBattleItems.setInt(2,equipment[i]);
+                    updateUserBattleItems.executeUpdate();
+                    if(bi.getId() == equipment[i]){
+                        bi.setAmount(bi.getAmount()+1);
+                    }
+                    
+                    //Remove the equipped item from inventory
+                    if(bi.getAmount() == 1){
+                        updateUserBattleItems = connection.prepareStatement("DELETE from "
+                        + "user_battle_items WHERE user_id = ? AND battle_item_id = ?");
+
+                    } else {
+                        updateUserBattleItems = connection.prepareStatement("UPDATE "
+                        + "user_battle_items SET amount=amount-1 WHERE user_id = ? AND battle_item_id = ?");
+                    }
+                    updateUserBattleItems.setInt(1, uid);
+                    updateUserBattleItems.setInt(2,bi.getId());
+                    updateUserBattleItems.executeUpdate();
+                }
+            }
+
             // add to user_equipment
             updateUserEquipment = connection.prepareStatement("UPDATE user_equipment "
                     + "SET " + bi.getType() + " = ? WHERE user_id = ?");
@@ -559,6 +583,35 @@ public class DBHandler {
         return bi;
     }
     
+    //WIP to check ingredient requirements
+    public String checkIngrReq(int uid, int ingr1, int ingr2, int ingr3) {
+        String check = "";
+        try {
+            checkIfIngredientNull = connection.prepareStatement("select * from user_ingredients where "
+                    + "user_id =" + uid + " and ingredient_id = " + ingr1);
+            ResultSet result = checkIfIngredientNull.executeQuery();
+            if (!(result.next())) {
+                check = "disabled";
+            }
+            checkIfIngredientNull = connection.prepareStatement("select * from user_ingredients where "
+                    + "user_id =" + uid + " and ingredient_id = " + ingr2);
+            result = checkIfIngredientNull.executeQuery();
+            if (!(result.next())) {
+                check = "disabled";
+            }
+            if (ingr3 != 0) {
+                checkIfIngredientNull = connection.prepareStatement("select * from user_ingredients where "
+                        + "user_id =" + uid + " and ingredient_id = " + ingr3);
+                result = checkIfIngredientNull.executeQuery();
+                if (!(result.next())) {
+                    check = "disabled";
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return check;
+    }
     
     public int getUserID(String username){
         int uID = -1;
@@ -578,5 +631,17 @@ public class DBHandler {
         
         return uID;
     }
-            
+    
+    public void initUser(int uid){
+        try{
+            updateUserEquipment = connection.prepareStatement("INSERT INTO user_equipment "
+                + "(user_id) VALUES (?)");
+            updateUserEquipment.setInt(1,uid);
+            updateUserEquipment.executeUpdate();
+            unlockRecipe(uid,getPotionById(1));
+        }
+        catch(Exception e){
+            e.printStackTrace();
+        }
+    }       
 }

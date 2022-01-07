@@ -1,7 +1,7 @@
 <%-- 
     Document   : brew
     Created on : 29 Dec 2021, 16:47:18
-    Author     : Sara Bertse and Jacob Dwyer
+    Author     : sarab
 --%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@page import="java.util.*" %>
@@ -21,8 +21,11 @@
         <h1>Welcome to brewing!</h1>
         <table><tr><th>Potion</th><th>Ingredient 1</th><th>Ingredient 2</th><th>Ingredient 3</th><th>Sell Price</th></tr>
         <%
+            //Change String to string array with booleans, from getAttribute 
+            String[] checkIngr = (String[])session.getAttribute("checkIngrArray");
             //WANT: Display amount as well. potionsReipes =/= userPotions (amount). Pröblem bröther.
             for(int i = 0; i<potions.size();i++){
+            
         %>
             
         <tr>
@@ -34,7 +37,7 @@
                 {out.print(recIngredients.get(i).get(2).getName());} %></td>
             <td><%= potions.get(i).getSellPrice()%></td>
             <td><input type="hidden" name="action" value="brew<%=i%>">
-            <input type="submit" value="Brew"></td>
+            <input type="submit" value="Brew" <%=checkIngr[i]%>></td>
             </form>
         </tr>
 
@@ -58,7 +61,7 @@
             </tr>
             <% 
                 }
-            %>
+                %>
         </table>
         <p>
             <form method="post" action="/AlchemyGame/BrewingServlet">

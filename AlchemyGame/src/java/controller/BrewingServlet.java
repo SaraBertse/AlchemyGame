@@ -100,6 +100,7 @@ public class BrewingServlet extends HttpServlet {
             ingredients.add(new ArrayList());
         }
 
+             String[] check = new String[userRecipesIDs.size()];
         //set recipe ingredients
         for (int i = 0; i < userRecipesIDs.size(); i++) {
             ingredients.get(i).add(dbh.getIngredientByID(userRecipes.get(i).getIngredient1ID()));
@@ -107,7 +108,13 @@ public class BrewingServlet extends HttpServlet {
             if (!(userRecipes.get(i).getIngredient3ID() == 0)) {
                 ingredients.get(i).add(dbh.getIngredientByID(userRecipes.get(i).getIngredient3ID()));
             }
+            //Fills the String array
+            check[i] = dbh.checkIngrReq(uid, userRecipes.get(i).getIngredient1ID(),
+                    userRecipes.get(i).getIngredient2ID(),
+                    userRecipes.get(i).getIngredient3ID());
         }
+        session.setAttribute("checkIngrArray",check);
+        
         session.setAttribute("recipeIngredients", ingredients);
 
         ArrayList<Ingredient> userIngredients = new ArrayList<>();
@@ -141,6 +148,19 @@ public class BrewingServlet extends HttpServlet {
                 
                 userIngredients = dbh.fetchAllUserIngredients(uid);
                 session.setAttribute("userIngredients", userIngredients);
+                
+                for (int j = 0; j < userRecipesIDs.size(); j++) {
+                    ingredients.get(j).add(dbh.getIngredientByID(userRecipes.get(j).getIngredient1ID()));
+                    ingredients.get(j).add(dbh.getIngredientByID(userRecipes.get(j).getIngredient2ID()));
+                    if (!(userRecipes.get(j).getIngredient3ID() == 0)) {
+                        ingredients.get(j).add(dbh.getIngredientByID(userRecipes.get(j).getIngredient3ID()));
+                    }
+                    //Fills the String array
+                    check[j] = dbh.checkIngrReq(uid, userRecipes.get(j).getIngredient1ID(),
+                            userRecipes.get(j).getIngredient2ID(),
+                            userRecipes.get(j).getIngredient3ID());
+                }
+                session.setAttribute("checkIngrArray", check);
 
                 RequestDispatcher rd = request.getRequestDispatcher("/brew.jsp");
 

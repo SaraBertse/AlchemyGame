@@ -58,5 +58,10 @@
             }
         %>
         </table>
+               <p>
+            <form method="post" action="/AlchemyGame/EquipmentServlet">
+            <input type="hidden" name="action" value="back">
+            <input type="submit" value="Back">
+            </form>
     </body>
 </html>

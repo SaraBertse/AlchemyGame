@@ -22,7 +22,7 @@ import model.User;
 
 /**
  *
- * @author HP
+ * @author sarab
  */
 public class UserServlet extends HttpServlet {
     String password="notworking";
@@ -140,21 +140,27 @@ public class UserServlet extends HttpServlet {
             //Registers a new user
         } else if ("register".equals(request.getParameter("regaction"))){
                 String regpassword = request.getParameter("regpassword");
-                if (regpassword != null){
-                    regpassword = encodePassw(regpassword); // encodes to MD5
-                }
                 RequestDispatcher rd;
+                if (regpassword == null || regpassword.length()<1){
+                     rd = request.getRequestDispatcher("/failedregister.html");
+                     rd.forward(request, response);
+                   // encodes to MD5
+                } else{
+                        regpassword = encodePassw(regpassword); 
+                }
                 for(User temp : users) {
                     //Checks if the username exists in the database
-                    if (temp.getUsername().equals(request.getParameter("regusername"))){
+                    if (temp.getUsername().equals(request.getParameter("regusername")) ||
+                            request.getParameter("regusername").length() < 1){
                         rd = request.getRequestDispatcher("/failedregister.html");
                         rd.forward(request, response);
                     }
                 }
-                
-                // initUser() method, add db tables where needed (like equipment)
-                
+            
+            application.setAttribute("username", request.getParameter("regusername"));
             dbh.registerUser(request.getParameter("regusername"),regpassword);
+            int uid = dbh.getUserID(request.getParameter("regusername"));
+            dbh.initUser(uid);
             rd = request.getRequestDispatcher("main.jsp");
             rd.forward(request, response);
         }

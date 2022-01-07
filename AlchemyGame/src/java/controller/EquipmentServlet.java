@@ -86,6 +86,10 @@ public class EquipmentServlet extends HttpServlet {
 
         int uid = dbh.getUserID((String) application.getAttribute("username"));
 
+        if("back".equals(request.getParameter("action"))){                
+            RequestDispatcher rd = request.getRequestDispatcher("/main.jsp");
+            rd.forward(request, response);        
+        }
         // list all items that can be equipped: user_battle_items
         // when press EQUIP, remove from list and in db user_battle_items,
         //     add to equipment list and db user_equipment
@@ -111,7 +115,6 @@ public class EquipmentServlet extends HttpServlet {
                     if (eqArr[j] != 0) {
                         userEquipment.add(dbh.getBattleItemByID(eqArr[j]));
                     } else {
-                        //BattleItem temp = dbh.getBattleItemByID(equipment[i]);
                         dummyBi = new BattleItem(0, "EMPTY", 0, 0, 0, types[j]);
                         userEquipment.add(dummyBi);
 
@@ -121,6 +124,9 @@ public class EquipmentServlet extends HttpServlet {
                 
                 dummyBi = new BattleItem(0, "EMPTY", 0, 0, 0, "EMPTY");
                 session.setAttribute("userEquipment", userEquipment);
+                
+                userInventory = dbh.fetchAllUserBattleItems(uid);
+                session.setAttribute("userInventory", userInventory);
 
                 RequestDispatcher rd = request.getRequestDispatcher("/equipment.jsp");
                 rd.forward(request, response);

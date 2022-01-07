@@ -1,7 +1,7 @@
 <%-- 
     Document   : main
-    Created on : 29 dec. 2021, 15:17:46
-    Author     : HP
+    Created on : 29 Dec 2021, 15:17:41
+    Author     : sarab
 --%>
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
@@ -29,6 +29,11 @@
         <form method="post" action="/AlchemyGame/MainServlet">
             <input type="hidden" name="action" value="quest">
             <input type="submit" value="Quest">
+        </form>
+        <p>
+        <form method="post" action="/AlchemyGame/MainServlet">
+            <input type="hidden" name="action" value="logout">
+            <input type="submit" value="Log out">
         </form>
     </body>
 </html>
