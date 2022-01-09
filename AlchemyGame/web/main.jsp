@@ -1,7 +1,7 @@
 <%-- 
     Document   : main
     Created on : 29 Dec 2021, 15:17:41
-    Author     : sarab
+    Author     : Sara Bertse and Jacob Dwyer
 --%>
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
@@ -9,11 +9,14 @@
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <title>JSP Page</title>
+        <title>Main Menu</title>
+        <%
+            int gold = (int)session.getAttribute("userGold");
+        %>
     </head>
     <body>
         <h1>Welcome to the Alchemy Game!</h1>
-        
+        <div>Current gold: <%=gold %></div>
         <form method="post" action="/AlchemyGame/MainServlet">
             <input type="hidden" name="action" value="brew">
             <input type="submit" value="Brew">

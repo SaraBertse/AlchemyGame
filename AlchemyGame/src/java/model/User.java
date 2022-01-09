@@ -6,7 +6,7 @@ package model;
 
 /**
  *
- * @author sarab
+ * @author Sara Bertse and Jacob Dwyer
  */
 public class User {
     

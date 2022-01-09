@@ -6,7 +6,7 @@ package model;
 
 /**
  *
- * @author sarab
+ * @author Sara Bertse and Jacob Dwyer
  */
 public class Quest {
     String monster = "rats";
@@ -16,6 +16,24 @@ public class Quest {
     int nrIngr2=0;
     String ingr3 = "";
     int nrIngr3=0;
+    String[] ingrNames;
+    int[] ingrAmounts;
+
+    public String[] getIngrNames() {
+        return ingrNames;
+    }
+
+    public void setIngrNames(String[] ingrNames) {
+        this.ingrNames = ingrNames;
+    }
+
+    public int[] getIngrAmounts() {
+        return ingrAmounts;
+    }
+
+    public void setIngrAmounts(int[] ingrAmounts) {
+        this.ingrAmounts = ingrAmounts;
+    }
 
 
     public String getMonster() {
@@ -73,5 +91,4 @@ public class Quest {
     public void setNrIngr3(int nrIngr3) {
         this.nrIngr3 = nrIngr3;
     }
-
 }

@@ -18,11 +18,11 @@ import model.Quest;
 
 /**
  *
- * @author HP
+ * @author Sara Bertse and Jacob Dwyer
  */
 public class MainServlet extends HttpServlet {
     //TODO:
-    //Implement so that you can't buy for more gold than you have
+    //Sell equipment
     //Implement different quests, depending on armor/weapon effect
     //Brewing equipment
 
@@ -86,6 +86,9 @@ public class MainServlet extends HttpServlet {
             dbh = new DBHandler();
         }
         int uid = dbh.getUserID((String)application.getAttribute("username"));
+        
+        int userGold = dbh.fetchUserGold(uid);
+        session.setAttribute("userGold", userGold);
         
         if ("brew".equals(request.getParameter("action"))) {
             ArrayList<Integer> userRecipesIDs = dbh.getUserRecipes(uid);
@@ -195,8 +198,12 @@ public class MainServlet extends HttpServlet {
             // fetch user recipes
             // remove user recipes from list of all recipes
             // send
+            
+            
             ArrayList<Potion> allPotions = dbh.fetchAllPotions();
             ArrayList<Integer> userRecipes = dbh.getUserRecipes(uid);
+            String[] checkGoldRecipe = new String[allPotions.size() - userRecipes.size()];
+            
             for(int i = 0; i < allPotions.size(); i++){
                 for(int j = 0; j < userRecipes.size(); j++){
                     if(allPotions.get(i).getId() == userRecipes.get(j)){
@@ -206,16 +213,28 @@ public class MainServlet extends HttpServlet {
             }
             session.setAttribute("availableRecipes", allPotions);
             
+            for(int i = 0; i < allPotions.size(); i++){
+                checkGoldRecipe[i] = dbh.checkGoldReq(uid, allPotions.get(i).getRecipePrice());
+            }
+            session.setAttribute("checkGoldRecipe", checkGoldRecipe);
+            
             //fetches all battle items
             ArrayList<BattleItem> allBattleItems = dbh.fetchAllBattleItems();
             session.setAttribute("allBattleItems",allBattleItems);
+            
+            String[] checkGold = new String[allBattleItems.size()];
+            for(int i = 0; i < allBattleItems.size(); i++){
+                checkGold[i] = dbh.checkGoldReq(uid, allBattleItems.get(i).getPurchasePrice());
+            }
+            session.setAttribute("checkGold", checkGold);
             
             RequestDispatcher rd = request.getRequestDispatcher("/market.jsp");
             rd.forward(request, response);
             
         } else if ("quest".equals(request.getParameter("action"))) {
             RequestDispatcher rd = request.getRequestDispatcher("/quest.jsp");
-            Quest questRewards = dbh.goQuesting(3, uid);
+            //Quest questRewards = dbh.goQuesting(dbh.calculatePower(uid), uid);
+            Quest questRewards = dbh.quest2(uid);
             session.setAttribute("questRewards", questRewards);
             rd.forward(request, response);
       /*  } else if ("back".equals(request.getParameter("action"))){

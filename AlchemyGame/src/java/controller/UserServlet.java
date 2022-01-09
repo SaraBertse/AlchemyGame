@@ -105,7 +105,6 @@ public class UserServlet extends HttpServlet {
         }
         //Get username and password from the POST
         users = dbh.findUsers();
-        
         //password = encodePassw(password); // encodes to MD5
         
         session.setAttribute("password",password);
@@ -120,7 +119,10 @@ public class UserServlet extends HttpServlet {
                     if (temp.getPassword().equals(password)){
                             rd = request.getRequestDispatcher("/main.jsp");
                             application.setAttribute("username", request.getParameter("username"));
-                            //rd.forward(request, response);
+                            int uid = dbh.getUserID(request.getParameter("username"));
+                            //set gold
+                            int userGold = dbh.fetchUserGold(uid);
+                            session.setAttribute("userGold", userGold);
                     } else {
                         rd = request.getRequestDispatcher("/indexcopy.html");
                         //rd.forward(request, response);
@@ -160,7 +162,13 @@ public class UserServlet extends HttpServlet {
             application.setAttribute("username", request.getParameter("regusername"));
             dbh.registerUser(request.getParameter("regusername"),regpassword);
             int uid = dbh.getUserID(request.getParameter("regusername"));
+            
+            dbh.increaseGold(uid, 10);
             dbh.initUser(uid);
+            
+            int userGold = dbh.fetchUserGold(uid);
+            session.setAttribute("userGold", userGold);
+            
             rd = request.getRequestDispatcher("main.jsp");
             rd.forward(request, response);
         }

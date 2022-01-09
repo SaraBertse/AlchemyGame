@@ -101,6 +101,7 @@ public class MarketServlet extends HttpServlet {
             }
         }
 
+        // when user buys a potion recipe
         ArrayList<Potion> allPotions = dbh.fetchAllPotions();
         String buyStr = "buy";
         for (int i = 0; i < allPotions.size(); i++) {
@@ -123,13 +124,22 @@ public class MarketServlet extends HttpServlet {
                 allPotions.remove(i); // update available potions list
 
                 session.setAttribute("availableRecipes", allPotions);
+                
+                // disable buy button for recipes where user gold not enough
+                String[] checkGoldRecipe = new String[allPotions.size()];
+                int index = 0;
+                for(Potion recipe : allPotions){
+                    checkGoldRecipe[index] = dbh.checkGoldReq(uid, recipe.getRecipePrice());
+                    index++;
+                }
+                session.setAttribute("checkGoldRecipe", checkGoldRecipe);
 
                 RequestDispatcher rd = request.getRequestDispatcher("/market.jsp");
                 rd.forward(request, response);
             }
-
         }
 
+        // when user buys equipment
         String buyeqStr = "buyeq";
         ArrayList<BattleItem> allBattleItems = (ArrayList<BattleItem>) session.getAttribute("allBattleItems");
         ArrayList<BattleItem> userBattleItems = dbh.fetchAllUserBattleItems(uid);
@@ -149,6 +159,17 @@ public class MarketServlet extends HttpServlet {
                 }
                 
                 dbh.buyBattleItem(uid, allBattleItems.get(i));
+                
+                // after purchase, check which equipm can be bought
+                String[] checkGold = new String[allBattleItems.size()];
+                int index = 0;
+                for(BattleItem bi : allBattleItems){
+                    checkGold[index] = dbh.checkGoldReq(uid, bi.getPurchasePrice());
+                    index++;
+                }
+                session.setAttribute("checkGold", checkGold);
+                
+                session.setAttribute("userGold", dbh.fetchUserGold(uid));
                 
                 RequestDispatcher rd = request.getRequestDispatcher("/market.jsp");
                 rd.forward(request, response);

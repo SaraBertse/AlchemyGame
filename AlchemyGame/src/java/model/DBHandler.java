@@ -12,7 +12,7 @@ import java.util.ArrayList;
 
 /**
  *
- * @author sarab
+ * @author Sara Bertse and Jacob Dwyer
  */
 public class DBHandler {
     
@@ -29,6 +29,7 @@ public class DBHandler {
        private PreparedStatement getBattleItemFromID;
        private PreparedStatement updateUserIngredients;
        private PreparedStatement getUserID;
+       private PreparedStatement getUserGold;
        private PreparedStatement checkIfIngredientNull;
        private PreparedStatement changeGold;
        private PreparedStatement updatePotionsSold;
@@ -55,8 +56,8 @@ public class DBHandler {
        }
          
        public static void connToDB(){
-          try{
-           connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/alchemy","admin", "admin");
+          try{ // alchemy_2","root", "admin"
+           connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/alchemy_2","root", "admin");
            System.out.println("connection successful");
           }
           catch(Exception e){
@@ -108,6 +109,106 @@ public class DBHandler {
         }
     }
     
+    // return sum effect of each equipped item as an int
+    public int calculatePower(int uid){
+        int power = 0;
+        ArrayList<BattleItem>  equipment = new ArrayList<>();
+        int[] equipmentID = fetchUserEquipment(uid);
+        
+        for(int i = 1; i < 8; i++){
+            equipment.add(getBattleItemByID(equipmentID[i]));
+        }
+        
+        for(BattleItem bi : equipment)
+            power += bi.getEffect();
+        
+        return power;
+    }
+    
+    // fetch list of ingredients whose rarity is at least min and at most max
+    public ArrayList<Ingredient> fetchIngrListByRarity(int min, int max){
+        ArrayList<Ingredient> ingrList = new ArrayList<>();
+        
+        try{
+            getAllIngredients = connection.prepareStatement("select * from ingredients "
+                    + "where rarity >= " + min + " and rarity <= " + max);
+            ResultSet result  = getAllIngredients.executeQuery();
+            while(result.next()){
+                ingrList.add(getIngredientByID(result.getInt("id")));
+            }
+        } 
+        catch(Exception e){
+            e.printStackTrace();
+        }
+        
+        return ingrList;
+    }
+    
+    public Quest quest2(int uid){
+        Quest quest = new Quest();
+        int power = calculatePower(uid);
+        ArrayList<Ingredient> ingrList;
+        
+        // TODO adjust rarity scale
+        if(power < 5){
+            ingrList = fetchIngrListByRarity(1, 2);
+            quest = setRandomIngr(ingrList, 1);
+            
+        } else if(power >= 5 && power < 15){
+            ingrList = fetchIngrListByRarity(1, 5);
+            
+            /*
+            randIndex = (int)(Math.random()*((ingrList.size()-1)-0+1)+0);  //(max-min+1)+min
+            quest.setIngr2(ingrList.get(randIndex).getName());
+        
+            randAmount = (int)(Math.random()*(4-1+1)+1);
+            quest.setNrIngr2(randAmount);*/
+            quest = setRandomIngr(ingrList, 2);
+            
+        } else if(power >= 15 && power < 40){
+            ingrList = fetchIngrListByRarity(1, 5);
+            
+            quest = setRandomIngr(ingrList, 2);
+            
+        } else { // power >= 40
+            ingrList = fetchIngrListByRarity(1, 5);
+            
+            quest = setRandomIngr(ingrList, 3);
+            
+            /*
+            randIndex = (int)(Math.random()*((ingrList.size()-1)-0+1)+0);  //(max-min+1)+min
+            quest.setIngr2(ingrList.get(randIndex).getName());
+        
+            randAmount = (int)(Math.random()*(4-1+1)+1);
+            quest.setNrIngr2(randAmount);
+            
+            randIndex = (int)(Math.random()*((ingrList.size()-1)-0+1)+0);  //(max-min+1)+min
+            quest.setIngr3(ingrList.get(randIndex).getName());
+        
+            randAmount = (int)(Math.random()*(4-1+1)+1);
+            quest.setNrIngr3(randAmount);
+            */
+        }
+        
+        return quest;
+    }
+    
+    // sets ingredients and amounts for a quest
+    public Quest setRandomIngr(ArrayList<Ingredient> ingrList, int num){
+        Quest q = new Quest();
+        String[] ingr = new String[num];
+        int[] ingrAmounts = new int[num];
+        
+        for(int i = 0; i < num; i++){
+            ingr[i] = ingrList.get((int)(Math.random()*((ingrList.size()-1)-0+1)+0)).getName();
+            ingrAmounts[i] = (int)(Math.random()*(4-i+1)+1);
+        }
+        
+        q.setIngrAmounts(ingrAmounts);
+        q.setIngrNames(ingr);
+        return q;
+    }
+    
     public Quest goQuesting(int power, int uid) {
         Quest quest = new Quest();
         allIngredientsByName = new ArrayList<>();
@@ -146,6 +247,28 @@ public class DBHandler {
                     
                } 
                updateUserIngredients.executeUpdate();
+            } else if (power > 10){
+               quest.setIngr1(getIngredientByID(2).getName());
+               quest.setNrIngr1(1);
+               
+               checkIfIngredientNull = connection.prepareStatement("select * from user_ingredients"
+                       + " WHERE user_id = " +uid+ " AND ingredient_id = " + 2);
+               ResultSet result2 = checkIfIngredientNull.executeQuery();
+               if (!result2.next()){
+                   updateUserIngredients= connection.prepareStatement("INSERT INTO "
+                           + "user_ingredients (user_id,ingredient_id,amount) VALUES (?,?,?)");
+                    updateUserIngredients.setInt(1, uid);
+                    updateUserIngredients.setInt(2, allIngredientsByID.get(2));
+                    updateUserIngredients.setInt(3, 1);
+               } else {
+                   updateUserIngredients= connection.prepareStatement("UPDATE user_ingredients SET amount = amount+? WHERE user_id = ? AND ingredient_id = ?");
+                    updateUserIngredients.setInt(1, 1);
+                    updateUserIngredients.setInt(2, uid);
+                    updateUserIngredients.setInt(3, allIngredientsByID.get(2));
+                    
+               } 
+               updateUserIngredients.executeUpdate();
+               
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -278,6 +401,24 @@ public class DBHandler {
         }
         
         return equipment;
+    }
+    
+    public int fetchUserGold(int uid){
+        int gold = -1;
+        
+        try{
+            getUserGold = connection.prepareStatement("SELECT gold FROM users "
+                    + "WHERE id = " + uid);
+            //getUserGold.setInt(1,uid);
+            ResultSet result = getUserGold.executeQuery();
+            if(result.next()){
+                gold = result.getInt("gold");
+            }
+        } catch(Exception e){
+            e.printStackTrace();
+        }
+        
+        return gold;    
     }
     
     // 
@@ -581,6 +722,16 @@ public class DBHandler {
             e.printStackTrace();
         }
         return bi;
+    }
+    
+    // compare user gold to price of item
+    public String checkGoldReq(int uid, int price){
+        String check = "";
+        
+        if(fetchUserGold(uid) < price)
+            check="disabled";
+        
+        return check;
     }
     
     //WIP to check ingredient requirements

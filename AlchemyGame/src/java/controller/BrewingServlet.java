@@ -20,7 +20,7 @@ import model.Potion;
 
 /**
  *
- * @author sarab
+ * @author Sara Bertse and Jacob Dwyer
  */
 public class BrewingServlet extends HttpServlet {
 
@@ -100,7 +100,7 @@ public class BrewingServlet extends HttpServlet {
             ingredients.add(new ArrayList());
         }
 
-             String[] check = new String[userRecipesIDs.size()];
+        String[] check = new String[userRecipesIDs.size()];
         //set recipe ingredients
         for (int i = 0; i < userRecipesIDs.size(); i++) {
             ingredients.get(i).add(dbh.getIngredientByID(userRecipes.get(i).getIngredient1ID()));

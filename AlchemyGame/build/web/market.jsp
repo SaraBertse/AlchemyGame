@@ -1,7 +1,7 @@
 <%-- 
     Document   : market
     Created on : 29 dec. 2021, 16:50:02
-    Author     : HP
+    Author     : Sara Bertse and Jacob Dwyer
 --%>
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
@@ -14,12 +14,16 @@
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <title>Market</title>
         <%
+            int gold = (int)session.getAttribute("userGold");
+            String[] checkGold = (String[])session.getAttribute("checkGold");
+            String[] checkGoldRecipe = (String[])session.getAttribute("checkGoldRecipe");
             ArrayList<Potion> potions = (ArrayList<Potion>)session.getAttribute("userPotions");
             ArrayList<Potion> recipes = (ArrayList<Potion>)session.getAttribute("availableRecipes");
         %>
     </head>
     <body>
         <h1>Welcome to the Market!</h1>
+        <div>Current gold: <%=gold %></div>
         <table><tr><th>Potion</th><th>Amount</th><th>Gold</th><th>Sell</th></tr>
         <%
             int i = 0;
@@ -34,8 +38,6 @@
             <input type="submit" value="Sell"></td>
             </form>
         </tr>
-
-
         <%
             i++;
             }
@@ -52,20 +54,18 @@
             <td><%= r.getName() %></td>
             <td><%= r.getRecipePrice() %></td>
             <td><input type="hidden" name="action" value="buy<%=i%>">
-            <input type="submit" value="Buy"></td>
+            <input type="submit" value="Buy" <%=checkGoldRecipe[i]%>></td>
             </form>
         </tr>
-
-
         <%
             i++;
             }
         %>
       </table>
         <table><tr><th>Name</th><th>Type</th><th>Effect</th><th>Purchase price</th></tr>
-                   <%
-        ArrayList<BattleItem> battleItems = (ArrayList<BattleItem>)session.getAttribute("allBattleItems");
-        i=0;
+        <%
+            ArrayList<BattleItem> battleItems = (ArrayList<BattleItem>)session.getAttribute("allBattleItems");
+            i=0;
             for(BattleItem b : battleItems){
         %>
         <tr>
@@ -75,7 +75,7 @@
             <td><%= b.getEffect() %></td>
             <td><%= b.getPurchasePrice() %></td>
             <td><input type="hidden" name="action" value="buyeq<%=i%>">
-            <input type="submit" value="Buy"></td>
+            <input type="submit" value="Buy" <%=checkGold[i]%>></td>
             </form>
         </tr>
         <%
