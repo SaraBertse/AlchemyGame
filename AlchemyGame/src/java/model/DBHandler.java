@@ -12,7 +12,7 @@ import java.util.ArrayList;
 
 /**
  *
- * @author Sara Bertse and Jacob Dwyer
+ * @author sarab
  */
 public class DBHandler {
     
@@ -26,6 +26,7 @@ public class DBHandler {
        private PreparedStatement getAllUserIngredients;
        private PreparedStatement getPotionFromID;
        private PreparedStatement getIngredientFromID;
+       private PreparedStatement getIngredientIDFromName;
        private PreparedStatement getBattleItemFromID;
        private PreparedStatement updateUserIngredients;
        private PreparedStatement getUserID;
@@ -56,8 +57,8 @@ public class DBHandler {
        }
          
        public static void connToDB(){
-          try{ // alchemy_2","root", "admin"
-           connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/alchemy_2","root", "admin");
+          try{
+           connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/alchemy","admin", "admin");
            System.out.println("connection successful");
           }
           catch(Exception e){
@@ -66,7 +67,7 @@ public class DBHandler {
           }
        }
        
- public User[] findUsers() {
+  public User[] findUsers() {
         try {
             getUserCount = connection.prepareStatement("SELECT COUNT(*) FROM users");
             ResultSet countResult = getUserCount.executeQuery();
@@ -144,53 +145,79 @@ public class DBHandler {
         return ingrList;
     }
     
+    //Test with higher power -- DOES NOT WORK CORRECTLY, only retrieves first ingr
     public Quest quest2(int uid){
         Quest quest = new Quest();
         int power = calculatePower(uid);
         ArrayList<Ingredient> ingrList;
         
         // TODO adjust rarity scale
-        if(power < 5){
+        int numOfIngredientsGotten = 1;
+        if (power < 5) {
             ingrList = fetchIngrListByRarity(1, 2);
-            quest = setRandomIngr(ingrList, 1);
-            
-        } else if(power >= 5 && power < 15){
+            quest = setRandomIngr(ingrList, numOfIngredientsGotten);
+        } else if (power >= 5 && power < 15) {
+            numOfIngredientsGotten = 2;
             ingrList = fetchIngrListByRarity(1, 5);
-            
-            /*
-            randIndex = (int)(Math.random()*((ingrList.size()-1)-0+1)+0);  //(max-min+1)+min
-            quest.setIngr2(ingrList.get(randIndex).getName());
-        
-            randAmount = (int)(Math.random()*(4-1+1)+1);
-            quest.setNrIngr2(randAmount);*/
-            quest = setRandomIngr(ingrList, 2);
-            
-        } else if(power >= 15 && power < 40){
+            quest = setRandomIngr(ingrList, numOfIngredientsGotten);
+        } else if (power >= 15 && power < 40) {
+            numOfIngredientsGotten = 2;
             ingrList = fetchIngrListByRarity(1, 5);
-            
-            quest = setRandomIngr(ingrList, 2);
-            
+            quest = setRandomIngr(ingrList, numOfIngredientsGotten);
         } else { // power >= 40
+            numOfIngredientsGotten = 3;
             ingrList = fetchIngrListByRarity(1, 5);
-            
-            quest = setRandomIngr(ingrList, 3);
-            
-            /*
-            randIndex = (int)(Math.random()*((ingrList.size()-1)-0+1)+0);  //(max-min+1)+min
-            quest.setIngr2(ingrList.get(randIndex).getName());
-        
-            randAmount = (int)(Math.random()*(4-1+1)+1);
-            quest.setNrIngr2(randAmount);
-            
-            randIndex = (int)(Math.random()*((ingrList.size()-1)-0+1)+0);  //(max-min+1)+min
-            quest.setIngr3(ingrList.get(randIndex).getName());
-        
-            randAmount = (int)(Math.random()*(4-1+1)+1);
-            quest.setNrIngr3(randAmount);
-            */
+            quest = setRandomIngr(ingrList, numOfIngredientsGotten);
         }
-        
-        return quest;
+        for (int i = 0; i < numOfIngredientsGotten; i++) {
+            String ingrName = quest.getIngrNames()[i];
+            int amount = quest.getIngrAmounts()[i];
+            int ingrId = getIngredientIDFromName(ingrName);
+            updateUserIngredient(uid, ingrId, amount);
+        }
+ 
+       return quest;
+    }
+
+    
+    public int getIngredientIDFromName(String ingrName){
+        int ingrId = 0;
+        try {
+            //Converts ingredient name into ingredient id
+            getIngredientIDFromName = connection.prepareStatement("select id from "
+                    + "ingredients where name = \"" + ingrName+"\"");
+            ResultSet result = getIngredientIDFromName.executeQuery();
+            if (result.next()) {
+                ingrId = result.getInt("id");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return ingrId;
+    }
+    
+    public void updateUserIngredient(int uid, int ingrId, int ingrAmount) {
+        try {
+            //Checks if the user has this ingredient
+            checkIfIngredientNull = connection.prepareStatement("select * from user_ingredients"
+                    + " WHERE user_id = " + uid + " AND ingredient_id = " + ingrId);
+            ResultSet result2 = checkIfIngredientNull.executeQuery();
+            if (!result2.next()) {
+                updateUserIngredients = connection.prepareStatement("INSERT INTO "
+                        + "user_ingredients (user_id,ingredient_id,amount) VALUES (?,?,?)");
+                updateUserIngredients.setInt(1, uid);
+                updateUserIngredients.setInt(2, ingrId);
+                updateUserIngredients.setInt(3, ingrAmount);
+            } else {
+                updateUserIngredients = connection.prepareStatement("UPDATE user_ingredients SET amount = amount+? WHERE user_id = ? AND ingredient_id = ?");
+                updateUserIngredients.setInt(1, ingrAmount);
+                updateUserIngredients.setInt(2, uid);
+                updateUserIngredients.setInt(3, allIngredientsByID.get(ingrId));
+            }
+            updateUserIngredients.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
     
     // sets ingredients and amounts for a quest
@@ -203,7 +230,6 @@ public class DBHandler {
             ingr[i] = ingrList.get((int)(Math.random()*((ingrList.size()-1)-0+1)+0)).getName();
             ingrAmounts[i] = (int)(Math.random()*(4-i+1)+1);
         }
-        
         q.setIngrAmounts(ingrAmounts);
         q.setIngrNames(ingr);
         return q;

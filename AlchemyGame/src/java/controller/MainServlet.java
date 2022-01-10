@@ -24,7 +24,9 @@ public class MainServlet extends HttpServlet {
     //TODO:
     //Sell equipment
     //Implement different quests, depending on armor/weapon effect
-    //Brewing equipment
+    //Brewing equipment -- 
+    //      - keep in mind to fix req checks for all categories (recipes, equipments, brewing eq)
+    //        so that the buttons are grayed out no matter which category is bought from
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>

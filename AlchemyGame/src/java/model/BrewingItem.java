@@ -6,7 +6,7 @@ package model;
 
 /**
  *
- * @author Sara Bertse and Jacob Dwyer
+ * @author HP
  */
 public class BrewingItem {
     int id = 0;

@@ -1,7 +1,7 @@
 <%-- 
     Document   : equipment
     Created on : 29 dec. 2021, 16:49:56
-    Author     : Sara Bertse and Jacob Dwyer
+    Author     : HP
 --%>
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
