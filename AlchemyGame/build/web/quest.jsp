@@ -30,13 +30,13 @@
     <body>
         <h1>Congratulations!</h1>
         <p>You have slain a pack of <%=monster%>!</P>
+        <p>You reward is:</P>
         <%
             int index = 0;
             for(String temp : ingrNames){
                 int amount = ingrAmounts[index];
                 index++;
             %>
-        <p>You reward is:</P>
         <table><tr>
             <td><%= amount%></td>
             <td><%= temp%>!</td>

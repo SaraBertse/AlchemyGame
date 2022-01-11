@@ -8,6 +8,7 @@
 <%@page import="java.util.*" %>
 <%@page import="model.Potion" %>
 <%@page import="model.BattleItem" %>
+<%@page import="model.BrewingItem" %>
 <!DOCTYPE html>
 <html>
     <head>
@@ -78,11 +79,30 @@
             <input type="submit" value="Buy" <%=checkGold[i]%>></td>
             </form>
         </tr>
-        <%
+        <% 
             i++;
-            }
+            }            
         %>
         </table>
+           <table><tr><th>Name</th><th>Effect</th><th>Purchase price</th></tr>
+               <%
+                    ArrayList<BrewingItem> brewingItems = (ArrayList<BrewingItem>)session.getAttribute("brewingItems");
+                    i = 0;
+                    for(BrewingItem br : brewingItems){
+                %>
+                       <tr>
+            <form method="post" action="/AlchemyGame/MarketServlet">
+            <td><%= br.getName() %></td>
+            <td><%= br.getEffect() %></td>
+            <td><%= br.getPurchasePrice() %></td>
+            <td><input type="hidden" name="action" value="breq<%=i%>">
+            <input type="submit" value="Buy"></td>
+            </form>
+        </tr>
+        <% 
+            i++;
+            }            
+        %>
                 <p>
             <form method="post" action="/AlchemyGame/MarketServlet">
             <input type="hidden" name="action" value="back">

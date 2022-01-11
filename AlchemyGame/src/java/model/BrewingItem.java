@@ -14,6 +14,17 @@ public class BrewingItem {
     int effect = 0;
     int purchasePrice = 0;
 
+    public BrewingItem(){
+        
+    }
+    
+    public BrewingItem(int id, String name, int effect, int purchasePrice){
+        this.id = id;
+        this.name = name;
+        this.effect = effect;
+        this.purchasePrice = purchasePrice;
+    }
+    
     public int getId() {
         return id;
     }

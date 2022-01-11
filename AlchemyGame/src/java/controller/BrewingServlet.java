@@ -140,7 +140,9 @@ public class BrewingServlet extends HttpServlet {
                     }
                 }
                 session.setAttribute("userRecipes", potions);
-                dbh.brew(uid, potions.get(i));
+                
+                int cauldron = dbh.fetchUserEquipment(uid)[8];
+                dbh.brew(uid, potions.get(i), cauldron);
 
                 potions = dbh.fetchAllUserPotions(uid);
     

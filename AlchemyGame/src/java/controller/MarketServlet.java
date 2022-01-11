@@ -15,6 +15,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import model.BattleItem;
+import model.BrewingItem;
 import model.DBHandler;
 import model.Potion;
 
@@ -197,13 +198,84 @@ public class MarketServlet extends HttpServlet {
                 rd.forward(request, response);
 
             } 
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            //Move out of loop?
             if ("back".equals(request.getParameter("action"))) {
                 RequestDispatcher rd = request.getRequestDispatcher("/main.jsp");
 
                 rd.forward(request, response);
             }
+            
+            
 
             //processRequest(request, response);
+        }
+        
+        
+        String breqStr = "breq";
+        ArrayList<BrewingItem> allBrewingItems = (ArrayList<BrewingItem>) session.getAttribute("brewingItems");
+        //ArrayList<BattleItem> userBattleItems = dbh.fetchAllUserBattleItems(uid);
+        
+        for (int i = 0; i < allBrewingItems.size(); i++) {
+            breqStr = "breq";
+            breqStr += i;
+            if (breqStr.equals(request.getParameter("action"))) {
+            
+              // dhb.buyBrewingItem();
+                allBrewingItems.remove(i);
+                session.setAttribute("brewingItems", allBrewingItems);
+              
+                // after purchase, check which equipm can be bought
+                allBattleItems = (ArrayList<BattleItem>)session.getAttribute("allBattleItems");
+                String[] checkGold = new String[allBattleItems.size()];
+                int index = 0;
+                for(BattleItem bi : allBattleItems){
+                    checkGold[index] = dbh.checkGoldReq(uid, bi.getPurchasePrice());
+                    index++;
+                }
+                session.setAttribute("checkGold", checkGold);
+                
+                // after purchase, check which equipm can be bought
+                String[] checkGoldBrewing = new String[allBrewingItems.size()];
+                index = 0;
+                for(BrewingItem br : allBrewingItems){
+                    checkGoldBrewing[index] = dbh.checkGoldReq(uid, br.getPurchasePrice());
+                    index++;
+                }
+                session.setAttribute("checkGoldBrewing", checkGoldBrewing);
+                
+                //allPotions = (ArrayList<Potion>)session.getAttribute("availableRecipes");
+              
+                
+                String[] checkGoldRecipe = new String[allPotions.size()];
+                index = 0;
+                for(Potion recipe : allPotions){
+                    checkGoldRecipe[index] = dbh.checkGoldReq(uid, recipe.getRecipePrice());
+                    index++;
+                }
+                
+                session.setAttribute("userGold", dbh.fetchUserGold(uid));
+                session.setAttribute("checkGoldRecipe", checkGoldRecipe);
+                
+                RequestDispatcher rd = request.getRequestDispatcher("/market.jsp");
+                rd.forward(request, response);
+            } 
+            
+                RequestDispatcher rd = request.getRequestDispatcher("/market.jsp");
+                rd.forward(request, response);
         }
     }
 

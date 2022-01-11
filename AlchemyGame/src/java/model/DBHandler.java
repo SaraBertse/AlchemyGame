@@ -24,6 +24,7 @@ public class DBHandler {
        private PreparedStatement getAllIngredients;
        private PreparedStatement getAllUserPotions;
        private PreparedStatement getAllUserIngredients;
+       private PreparedStatement getBrewingItems;
        private PreparedStatement getPotionFromID;
        private PreparedStatement getIngredientFromID;
        private PreparedStatement getIngredientIDFromName;
@@ -42,6 +43,7 @@ public class DBHandler {
        private PreparedStatement getAllUserBattleItems;
        private PreparedStatement getUserEquipment;
        private PreparedStatement updateUserEquipment;
+      
   
 
        int userCount;
@@ -156,18 +158,22 @@ public class DBHandler {
         if (power < 5) {
             ingrList = fetchIngrListByRarity(1, 2);
             quest = setRandomIngr(ingrList, numOfIngredientsGotten);
+            quest.setMonster("rats");
         } else if (power >= 5 && power < 15) {
             numOfIngredientsGotten = 2;
-            ingrList = fetchIngrListByRarity(1, 5);
+            ingrList = fetchIngrListByRarity(1, 4);
             quest = setRandomIngr(ingrList, numOfIngredientsGotten);
+            quest.setMonster("goblins");
         } else if (power >= 15 && power < 40) {
             numOfIngredientsGotten = 2;
             ingrList = fetchIngrListByRarity(1, 5);
             quest = setRandomIngr(ingrList, numOfIngredientsGotten);
+            quest.setMonster("orcs");
         } else { // power >= 40
             numOfIngredientsGotten = 3;
             ingrList = fetchIngrListByRarity(1, 5);
             quest = setRandomIngr(ingrList, numOfIngredientsGotten);
+            quest.setMonster("wyverns");
         }
         for (int i = 0; i < numOfIngredientsGotten; i++) {
             String ingrName = quest.getIngrNames()[i];
@@ -212,7 +218,7 @@ public class DBHandler {
                 updateUserIngredients = connection.prepareStatement("UPDATE user_ingredients SET amount = amount+? WHERE user_id = ? AND ingredient_id = ?");
                 updateUserIngredients.setInt(1, ingrAmount);
                 updateUserIngredients.setInt(2, uid);
-                updateUserIngredients.setInt(3, allIngredientsByID.get(ingrId));
+                updateUserIngredients.setInt(3, ingrId);
             }
             updateUserIngredients.executeUpdate();
         } catch (Exception e) {
@@ -447,6 +453,36 @@ public class DBHandler {
         return gold;    
     }
     
+    public ArrayList<BrewingItem> fetchAllBrewingItems(){
+        ArrayList<BrewingItem> brewingItems = new ArrayList<>();
+        try{
+            getBrewingItems = connection.prepareStatement("SELECT * from "
+                    + "brewing_items");
+            ResultSet result = getBrewingItems.executeQuery();
+            while(result.next()){
+                brewingItems.add(getBrewingItemById(result.getInt("id")));
+            }      
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+        return brewingItems;
+    }
+    
+    public BrewingItem getBrewingItemById(int brid){
+        BrewingItem item = new BrewingItem();
+        try{
+            getBrewingItems = connection.prepareStatement("SELECT * from "
+                    + "brewing_items where id ="+brid);
+            ResultSet result = getBrewingItems.executeQuery();
+            if(result.next()){
+                item = new BrewingItem(brid,result.getString("name"),result.getInt("effect"),
+                result.getInt("purchase_price"));
+            }
+        } catch (Exception e) {
+           e.printStackTrace(); 
+        }
+        return item;
+    }
     // 
     public Potion getPotionById(int pid) {
         Potion p = new Potion();
@@ -520,16 +556,16 @@ public class DBHandler {
         }
     }
     
-    public void brew(int uid, Potion p){
+    public void brew(int uid, Potion p, int cauldron){
         //Add a potion to user_potions;
         try {
             if (p.getAmount() == 0) {
                 updatePotionsAmount = connection.prepareStatement("INSERT INTO "
                         + "user_potions (user_id,potions_id,amount) VALUES (?,?,?)");
-                updatePotionsAmount.setInt(3, 1);
+                updatePotionsAmount.setInt(3, cauldron);
                 //lägg till rad 280+281 vid knas
             } else {
-                updatePotionsAmount = connection.prepareStatement("UPDATE user_potions SET amount = amount+1 "
+                updatePotionsAmount = connection.prepareStatement("UPDATE user_potions SET amount = amount+"+cauldron+ " "
                         + "WHERE user_id = ? AND potions_id = ?");
             }
             updatePotionsAmount.setInt(1, uid);
@@ -679,6 +715,14 @@ public class DBHandler {
         
     }
     
+    public void buyBrewingItems(int uid, BrewingItem brew){
+        //Always do update on user equipment
+        
+        //Take money
+        
+        //
+    }
+    
     
     // used when buying a potion recipe
     public void unlockRecipe(int uid, Potion p){
@@ -812,8 +856,9 @@ public class DBHandler {
     public void initUser(int uid){
         try{
             updateUserEquipment = connection.prepareStatement("INSERT INTO user_equipment "
-                + "(user_id) VALUES (?)");
+                + "(user_id, cauldron) VALUES (?,?)");
             updateUserEquipment.setInt(1,uid);
+            updateUserEquipment.setInt(2,1);
             updateUserEquipment.executeUpdate();
             unlockRecipe(uid,getPotionById(1));
         }

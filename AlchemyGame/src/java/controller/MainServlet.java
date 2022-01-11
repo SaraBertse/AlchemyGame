@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import model.BattleItem;
+import model.BrewingItem;
 import model.DBHandler;
 import model.Ingredient;
 import model.Potion;
@@ -23,10 +24,12 @@ import model.Quest;
 public class MainServlet extends HttpServlet {
     //TODO:
     //Sell equipment
-    //Implement different quests, depending on armor/weapon effect
     //Brewing equipment -- 
+    //     Fix buyBrewingEquipment in database so it changed equipments and takes gold
+    //     move "back" button in brew.jsp
     //      - keep in mind to fix req checks for all categories (recipes, equipments, brewing eq)
     //        so that the buttons are grayed out no matter which category is bought from
+    //        test so user_init starts with a cauldron
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -229,6 +232,17 @@ public class MainServlet extends HttpServlet {
                 checkGold[i] = dbh.checkGoldReq(uid, allBattleItems.get(i).getPurchasePrice());
             }
             session.setAttribute("checkGold", checkGold);
+            
+            ArrayList<BrewingItem> allBrewingItems = dbh.fetchAllBrewingItems();
+            int cauldron = dbh.fetchUserEquipment(uid)[8];
+
+            //Removes any brewing item that has a lower id than what the user has equipped
+            for (int i = 0; i < allBrewingItems.size(); i++) {
+                if (allBrewingItems.get(0).getId() <= cauldron) {
+                    allBrewingItems.remove(0);
+                }
+            }
+            session.setAttribute("brewingItems", allBrewingItems);
             
             RequestDispatcher rd = request.getRequestDispatcher("/market.jsp");
             rd.forward(request, response);
