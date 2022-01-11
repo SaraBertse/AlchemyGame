@@ -17,6 +17,7 @@ import javax.servlet.http.HttpSession;
 import model.DBHandler;
 import model.Ingredient;
 import model.Potion;
+import model.User;
 
 /**
  *
@@ -171,9 +172,12 @@ public class BrewingServlet extends HttpServlet {
 
         }
         if ("back".equals(request.getParameter("action"))) {
-                RequestDispatcher rd = request.getRequestDispatcher("/main.jsp");
+            User u = dbh.fetchUserStats(uid);
+            session.setAttribute("user", u);
+            
+            RequestDispatcher rd = request.getRequestDispatcher("/main.jsp");
 
-                rd.forward(request, response);
+            rd.forward(request, response);
         }
 
         RequestDispatcher rd = request.getRequestDispatcher("/brew.jsp");

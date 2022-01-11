@@ -5,6 +5,7 @@
 --%>
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@page import="model.User" %>
 <!DOCTYPE html>
 <html>
     <head>
@@ -12,11 +13,14 @@
         <title>Main Menu</title>
         <%
             int gold = (int)session.getAttribute("userGold");
+            User u = (User)session.getAttribute("user");
         %>
     </head>
     <body>
         <h1>Welcome to the Alchemy Game!</h1>
         <div>Current gold: <%=gold %></div>
+        <div>Potions crafted: <%=u.getPotionsCrafted() %></div>
+        <div>Potions sold: <%=u.getPotionsSold() %></div>
         <form method="post" action="/AlchemyGame/MainServlet">
             <input type="hidden" name="action" value="brew">
             <input type="submit" value="Brew">

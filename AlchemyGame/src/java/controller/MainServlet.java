@@ -16,20 +16,13 @@ import model.DBHandler;
 import model.Ingredient;
 import model.Potion;
 import model.Quest;
+import model.User;
 
 /**
  *
  * @author Sara Bertse and Jacob Dwyer
  */
 public class MainServlet extends HttpServlet {
-    //TODO:
-    //Sell equipment
-    //Brewing equipment -- 
-    //     Fix buyBrewingEquipment in database so it changed equipments and takes gold
-    //     move "back" button in brew.jsp
-    //      - keep in mind to fix req checks for all categories (recipes, equipments, brewing eq)
-    //        so that the buttons are grayed out no matter which category is bought from
-    //        test so user_init starts with a cauldron
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -94,6 +87,7 @@ public class MainServlet extends HttpServlet {
         
         int userGold = dbh.fetchUserGold(uid);
         session.setAttribute("userGold", userGold);
+        
         
         if ("brew".equals(request.getParameter("action"))) {
             ArrayList<Integer> userRecipesIDs = dbh.getUserRecipes(uid);
@@ -237,12 +231,21 @@ public class MainServlet extends HttpServlet {
             int cauldron = dbh.fetchUserEquipment(uid)[8];
 
             //Removes any brewing item that has a lower id than what the user has equipped
-            for (int i = 0; i < allBrewingItems.size(); i++) {
+            // num of game cauldrons hard-coded
+            for (int i = 0; i < 3; i++) {
                 if (allBrewingItems.get(0).getId() <= cauldron) {
                     allBrewingItems.remove(0);
                 }
             }
             session.setAttribute("brewingItems", allBrewingItems);
+            
+            String[] checkGoldBrew = new String[allBrewingItems.size()];
+                    int index = 0;
+                    for(BrewingItem br : allBrewingItems){
+                        checkGoldBrew[index] = dbh.checkGoldReq(uid, br.getPurchasePrice());
+                        index++;
+                    }
+                    session.setAttribute("checkGoldBrew", checkGoldBrew);
             
             RequestDispatcher rd = request.getRequestDispatcher("/market.jsp");
             rd.forward(request, response);
@@ -250,7 +253,7 @@ public class MainServlet extends HttpServlet {
         } else if ("quest".equals(request.getParameter("action"))) {
             RequestDispatcher rd = request.getRequestDispatcher("/quest.jsp");
             //Quest questRewards = dbh.goQuesting(dbh.calculatePower(uid), uid);
-            Quest questRewards = dbh.quest2(uid);
+            Quest questRewards = dbh.questing(uid);
             session.setAttribute("questRewards", questRewards);
             rd.forward(request, response);
       /*  } else if ("back".equals(request.getParameter("action"))){

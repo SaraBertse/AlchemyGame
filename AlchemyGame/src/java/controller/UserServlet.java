@@ -9,7 +9,6 @@ import java.io.PrintWriter;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.List;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -22,7 +21,7 @@ import model.User;
 
 /**
  *
- * @author sarab
+ * @author Sara Bertse and Jacob Dwyer
  */
 public class UserServlet extends HttpServlet {
     String password="notworking";
@@ -65,7 +64,15 @@ public class UserServlet extends HttpServlet {
  @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-                RequestDispatcher rd = request.getRequestDispatcher("/index.html");
+        //response.setContentType("text/html;charset=UTF-8");
+        //PrintWriter out = response.getWriter();
+        HttpSession session = request.getSession(true);
+        String loginFail = "hidden";
+        session.setAttribute("loginFail",loginFail);
+        String regFail = "hidden";
+        session.setAttribute("regFail",regFail);
+        
+                RequestDispatcher rd = request.getRequestDispatcher("/index.jsp");
                 rd.forward(request, response);
     }
 
@@ -109,6 +116,10 @@ public class UserServlet extends HttpServlet {
         
         session.setAttribute("password",password);
         //       application.setAttribute("users", users);
+        String loginFail = "hidden";
+        //session.setAttribute("loginFail",loginFail);
+        String regFail = "hidden";
+        //session.setAttribute("regFail",regFail);
         if ("login".equals(request.getParameter("action"))) {
             // check if user is authorized with the "dbh" object
             for(User temp : users) {
@@ -117,14 +128,22 @@ public class UserServlet extends HttpServlet {
                     //password = request.getParameter("password");
                     RequestDispatcher rd;
                     if (temp.getPassword().equals(password)){
-                            rd = request.getRequestDispatcher("/main.jsp");
-                            application.setAttribute("username", request.getParameter("username"));
-                            int uid = dbh.getUserID(request.getParameter("username"));
-                            //set gold
-                            int userGold = dbh.fetchUserGold(uid);
-                            session.setAttribute("userGold", userGold);
+                        application.setAttribute("username", request.getParameter("username"));
+                        int uid = dbh.getUserID(request.getParameter("username"));
+                        //set gold
+                        int userGold = dbh.fetchUserGold(uid);
+                        session.setAttribute("userGold", userGold);
+                        User us = dbh.fetchUserStats(uid);
+                        session.setAttribute("user", us);
+                        rd = request.getRequestDispatcher("/main.jsp");
+                            
+                            
                     } else {
-                        rd = request.getRequestDispatcher("/indexcopy.html");
+                        loginFail="";
+                        session.setAttribute("loginFail", loginFail);
+                        regFail = "hidden";
+                        session.setAttribute("regFail",regFail);
+                        rd = request.getRequestDispatcher("/index.jsp");
                         //rd.forward(request, response);
                     }
                     
@@ -137,14 +156,22 @@ public class UserServlet extends HttpServlet {
                     rd.forward(request, response);
                 } 
             }
-            RequestDispatcher rd = request.getRequestDispatcher("/indexcopy.html"); //Ska gå in på quizzen ist
+            loginFail="";
+            session.setAttribute("loginFail",loginFail);
+            regFail = "hidden";
+            session.setAttribute("regFail",regFail);
+            RequestDispatcher rd = request.getRequestDispatcher("/index.jsp"); //Ska gå in på quizzen ist
             rd.forward(request, response);
             //Registers a new user
         } else if ("register".equals(request.getParameter("regaction"))){
                 String regpassword = request.getParameter("regpassword");
                 RequestDispatcher rd;
                 if (regpassword == null || regpassword.length()<1){
-                     rd = request.getRequestDispatcher("/failedregister.html");
+                     regFail = "";
+                     session.setAttribute("regFail",regFail);
+                     loginFail = "hidden";
+                     session.setAttribute("loginFail",loginFail);
+                     rd = request.getRequestDispatcher("/index.jsp");
                      rd.forward(request, response);
                    // encodes to MD5
                 } else{
@@ -154,7 +181,11 @@ public class UserServlet extends HttpServlet {
                     //Checks if the username exists in the database
                     if (temp.getUsername().equals(request.getParameter("regusername")) ||
                             request.getParameter("regusername").length() < 1){
-                        rd = request.getRequestDispatcher("/failedregister.html");
+                        regFail = "";
+                        session.setAttribute("regFail",regFail);
+                        loginFail= "hidden";
+                        session.setAttribute("loginFail",loginFail);
+                        rd = request.getRequestDispatcher("/index.jsp"); //failedregister.html
                         rd.forward(request, response);
                     }
                 }
@@ -168,6 +199,9 @@ public class UserServlet extends HttpServlet {
             
             int userGold = dbh.fetchUserGold(uid);
             session.setAttribute("userGold", userGold);
+            
+            User us = dbh.fetchUserStats(uid);
+            session.setAttribute("user", us);
             
             rd = request.getRequestDispatcher("main.jsp");
             rd.forward(request, response);

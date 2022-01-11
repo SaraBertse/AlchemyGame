@@ -18,6 +18,7 @@ import model.BattleItem;
 import model.BrewingItem;
 import model.DBHandler;
 import model.Potion;
+import model.User;
 
 /**
  *
@@ -85,7 +86,7 @@ public class MarketServlet extends HttpServlet {
         }
 
         int uid = dbh.getUserID((String) application.getAttribute("username"));
-
+        ArrayList<BrewingItem> allBrewingItems = (ArrayList<BrewingItem>) session.getAttribute("brewingItems");
         ArrayList<Potion> potions = (ArrayList<Potion>) session.getAttribute("userPotions");
         String str = "sell";
         for (int i = 0; i < potions.size(); i++) {
@@ -134,6 +135,7 @@ public class MarketServlet extends HttpServlet {
                     checkGoldRecipe[index] = dbh.checkGoldReq(uid, recipe.getRecipePrice());
                     index++;
                 }
+                session.setAttribute("checkGoldRecipe", checkGoldRecipe);
                 
                 ArrayList<BattleItem> allBattleItems = (ArrayList<BattleItem>) session.getAttribute("allBattleItems");
                 String[] checkGold = new String[allBattleItems.size()];
@@ -143,7 +145,15 @@ public class MarketServlet extends HttpServlet {
                     index++;
                 }
                 session.setAttribute("checkGold", checkGold);
-                session.setAttribute("checkGoldRecipe", checkGoldRecipe);
+                
+                String[] checkGoldBrew = new String[allBrewingItems.size()];
+                index = 0;
+                for (BrewingItem br : allBrewingItems) {
+                    checkGoldBrew[index] = dbh.checkGoldReq(uid, br.getPurchasePrice());
+                    index++;
+                }
+                session.setAttribute("checkGoldBrew", checkGoldBrew);
+                
                 session.setAttribute("userGold", dbh.fetchUserGold(uid));
 
                 RequestDispatcher rd = request.getRequestDispatcher("/market.jsp");
@@ -190,43 +200,30 @@ public class MarketServlet extends HttpServlet {
                     checkGoldRecipe[index] = dbh.checkGoldReq(uid, recipe.getRecipePrice());
                     index++;
                 }
-                
-                session.setAttribute("userGold", dbh.fetchUserGold(uid));
                 session.setAttribute("checkGoldRecipe", checkGoldRecipe);
+                
+                String[] checkGoldBrew = new String[allBrewingItems.size()];
+                index = 0;
+                for (BrewingItem br : allBrewingItems) {
+                    checkGoldBrew[index] = dbh.checkGoldReq(uid, br.getPurchasePrice());
+                    index++;
+                }
+                session.setAttribute("checkGoldBrew", checkGoldBrew);
+
+                session.setAttribute("userGold", dbh.fetchUserGold(uid));
                 
                 RequestDispatcher rd = request.getRequestDispatcher("/market.jsp");
                 rd.forward(request, response);
-
-            } 
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            //Move out of loop?
-            if ("back".equals(request.getParameter("action"))) {
-                RequestDispatcher rd = request.getRequestDispatcher("/main.jsp");
-
-                rd.forward(request, response);
             }
             
+            //Move out of loop?
             
-
             //processRequest(request, response);
         }
         
         
         String breqStr = "breq";
-        ArrayList<BrewingItem> allBrewingItems = (ArrayList<BrewingItem>) session.getAttribute("brewingItems");
+        
         //ArrayList<BattleItem> userBattleItems = dbh.fetchAllUserBattleItems(uid);
         
         for (int i = 0; i < allBrewingItems.size(); i++) {
@@ -234,8 +231,15 @@ public class MarketServlet extends HttpServlet {
             breqStr += i;
             if (breqStr.equals(request.getParameter("action"))) {
             
-              // dhb.buyBrewingItem();
-                allBrewingItems.remove(i);
+                dbh.buyBrewingItem(uid, allBrewingItems.get(i));
+                
+                int brid = allBrewingItems.get(i).getId();
+                for (int j = 0; j < 3; j++) {
+                    if(!allBrewingItems.isEmpty())
+                        if (allBrewingItems.get(0).getId() <= brid) {
+                            allBrewingItems.remove(0);
+                        }
+                }
                 session.setAttribute("brewingItems", allBrewingItems);
               
                 // after purchase, check which equipm can be bought
@@ -257,8 +261,13 @@ public class MarketServlet extends HttpServlet {
                 }
                 session.setAttribute("checkGoldBrewing", checkGoldBrewing);
                 
-                //allPotions = (ArrayList<Potion>)session.getAttribute("availableRecipes");
-              
+                String[] checkGoldBrew = new String[allBrewingItems.size()];
+                index = 0;
+                for (BrewingItem br : allBrewingItems) {
+                    checkGoldBrew[index] = dbh.checkGoldReq(uid, br.getPurchasePrice());
+                    index++;
+                }
+                session.setAttribute("checkGoldBrew", checkGoldBrew);
                 
                 String[] checkGoldRecipe = new String[allPotions.size()];
                 index = 0;
@@ -267,15 +276,25 @@ public class MarketServlet extends HttpServlet {
                     index++;
                 }
                 
+                
                 session.setAttribute("userGold", dbh.fetchUserGold(uid));
                 session.setAttribute("checkGoldRecipe", checkGoldRecipe);
+                
                 
                 RequestDispatcher rd = request.getRequestDispatcher("/market.jsp");
                 rd.forward(request, response);
             } 
             
-                RequestDispatcher rd = request.getRequestDispatcher("/market.jsp");
-                rd.forward(request, response);
+               // RequestDispatcher rd = request.getRequestDispatcher("/market.jsp");
+               // rd.forward(request, response);
+        }
+        
+        if ("back".equals(request.getParameter("action"))) {
+            User u = dbh.fetchUserStats(uid);
+            session.setAttribute("user", u);
+            
+            RequestDispatcher rd = request.getRequestDispatcher("/main.jsp");
+            rd.forward(request, response);
         }
     }
 

@@ -39,7 +39,7 @@ public class Ingredient {
         this.rarity = rarity;
     }
     
-        public int getAmount() {
+    public int getAmount() {
         return amount;
     }
 

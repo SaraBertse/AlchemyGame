@@ -18,6 +18,7 @@
             int gold = (int)session.getAttribute("userGold");
             String[] checkGold = (String[])session.getAttribute("checkGold");
             String[] checkGoldRecipe = (String[])session.getAttribute("checkGoldRecipe");
+            String[] checkGoldBrew = (String[])session.getAttribute("checkGoldBrew");
             ArrayList<Potion> potions = (ArrayList<Potion>)session.getAttribute("userPotions");
             ArrayList<Potion> recipes = (ArrayList<Potion>)session.getAttribute("availableRecipes");
         %>
@@ -84,7 +85,7 @@
             }            
         %>
         </table>
-           <table><tr><th>Name</th><th>Effect</th><th>Purchase price</th></tr>
+        <table><tr><th>Name</th><th>Effect</th><th>Purchase price</th></tr>
                <%
                     ArrayList<BrewingItem> brewingItems = (ArrayList<BrewingItem>)session.getAttribute("brewingItems");
                     i = 0;
@@ -96,14 +97,15 @@
             <td><%= br.getEffect() %></td>
             <td><%= br.getPurchasePrice() %></td>
             <td><input type="hidden" name="action" value="breq<%=i%>">
-            <input type="submit" value="Buy"></td>
+            <input type="submit" value="Buy" <%=checkGoldBrew[i]%>></td>
             </form>
         </tr>
         <% 
             i++;
             }            
         %>
-                <p>
+        </table>
+            <p>
             <form method="post" action="/AlchemyGame/MarketServlet">
             <input type="hidden" name="action" value="back">
             <input type="submit" value="Back">

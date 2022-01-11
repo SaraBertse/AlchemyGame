@@ -13,8 +13,8 @@ public class User {
     private String username;
     private String password;
     private int gold;
-    private int potions_crafted;
-    private int potions_sold;
+    private int potionsCrafted;
+    private int potionsSold;
     
     public String getUsername() {
         return username;
@@ -40,19 +40,19 @@ public class User {
         this.gold = gold;
     }
 
-    public int getPotions_crafted() {
-        return potions_crafted;
+    public int getPotionsCrafted() {
+        return potionsCrafted;
     }
 
-    public void setPotions_crafted(int potions_crafted) {
-        this.potions_crafted = potions_crafted;
+    public void setPotionsCrafted(int potionsCrafted) {
+        this.potionsCrafted = potionsCrafted;
     }
 
-    public int getPotions_sold() {
-        return potions_sold;
+    public int getPotionsSold() {
+        return potionsSold;
     }
 
-    public void setPotions_sold(int potions_sold) {
-        this.potions_sold = potions_sold;
+    public void setPotionsSold(int potionsSold) {
+        this.potionsSold = potionsSold;
     }
 }

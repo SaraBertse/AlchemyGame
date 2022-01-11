@@ -34,6 +34,7 @@ public class DBHandler {
        private PreparedStatement getUserGold;
        private PreparedStatement checkIfIngredientNull;
        private PreparedStatement changeGold;
+       private PreparedStatement updatePotionsCrafted;
        private PreparedStatement updatePotionsSold;
        private PreparedStatement updatePotionsAmount;
        private PreparedStatement updateUserBattleItems;
@@ -42,6 +43,7 @@ public class DBHandler {
        private PreparedStatement getAllBattleItems;
        private PreparedStatement getAllUserBattleItems;
        private PreparedStatement getUserEquipment;
+       private PreparedStatement getUserStats;
        private PreparedStatement updateUserEquipment;
       
   
@@ -59,8 +61,8 @@ public class DBHandler {
        }
          
        public static void connToDB(){
-          try{
-           connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/alchemy","admin", "admin");
+          try{ // localhost:3306/alchemy_2, "root"
+           connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/alchemy_2","root", "admin");
            System.out.println("connection successful");
           }
           catch(Exception e){
@@ -148,7 +150,7 @@ public class DBHandler {
     }
     
     //Test with higher power -- DOES NOT WORK CORRECTLY, only retrieves first ingr
-    public Quest quest2(int uid){
+    public Quest questing(int uid){
         Quest quest = new Quest();
         int power = calculatePower(uid);
         ArrayList<Ingredient> ingrList;
@@ -239,73 +241,6 @@ public class DBHandler {
         q.setIngrAmounts(ingrAmounts);
         q.setIngrNames(ingr);
         return q;
-    }
-    
-    public Quest goQuesting(int power, int uid) {
-        Quest quest = new Quest();
-        allIngredientsByName = new ArrayList<>();
-        allIngredientsByID = new ArrayList<>();
-        
-        try {
-            getAllIngredients = connection.prepareStatement("select * from ingredients order by rarity asc;");
-            quest.setMonster("troll");
-          //  quest.setIngr1("troll fat");
-            ResultSet result  = getAllIngredients.executeQuery();
-            while(result.next()){
-                    allIngredientsByName.add(result.getString("name"));
-                    allIngredientsByID.add(result.getInt("id"));
-            }
-            if (power < 5){
-               int randIndex = (int)(Math.random()*(6-0+1)+0);  //(max-min+1)+min
-               int randAmount = (int)(Math.random()*(4-1+1)+1);
-               
-               quest.setIngr1(allIngredientsByName.get(randIndex));
-               quest.setNrIngr1(randAmount);
-               
-               checkIfIngredientNull = connection.prepareStatement("select * from user_ingredients"
-                       + " WHERE user_id = " +uid+ " AND ingredient_id = " + allIngredientsByID.get(randIndex));
-               ResultSet result2 = checkIfIngredientNull.executeQuery();
-               if (!result2.next()){
-                   updateUserIngredients= connection.prepareStatement("INSERT INTO "
-                           + "user_ingredients (user_id,ingredient_id,amount) VALUES (?,?,?)");
-                    updateUserIngredients.setInt(1, uid);
-                    updateUserIngredients.setInt(2, allIngredientsByID.get(randIndex));
-                    updateUserIngredients.setInt(3, randAmount);
-               } else {
-                   updateUserIngredients= connection.prepareStatement("UPDATE user_ingredients SET amount = amount+? WHERE user_id = ? AND ingredient_id = ?");
-                    updateUserIngredients.setInt(1, randAmount);
-                    updateUserIngredients.setInt(2, uid);
-                    updateUserIngredients.setInt(3, allIngredientsByID.get(randIndex));
-                    
-               } 
-               updateUserIngredients.executeUpdate();
-            } else if (power > 10){
-               quest.setIngr1(getIngredientByID(2).getName());
-               quest.setNrIngr1(1);
-               
-               checkIfIngredientNull = connection.prepareStatement("select * from user_ingredients"
-                       + " WHERE user_id = " +uid+ " AND ingredient_id = " + 2);
-               ResultSet result2 = checkIfIngredientNull.executeQuery();
-               if (!result2.next()){
-                   updateUserIngredients= connection.prepareStatement("INSERT INTO "
-                           + "user_ingredients (user_id,ingredient_id,amount) VALUES (?,?,?)");
-                    updateUserIngredients.setInt(1, uid);
-                    updateUserIngredients.setInt(2, allIngredientsByID.get(2));
-                    updateUserIngredients.setInt(3, 1);
-               } else {
-                   updateUserIngredients= connection.prepareStatement("UPDATE user_ingredients SET amount = amount+? WHERE user_id = ? AND ingredient_id = ?");
-                    updateUserIngredients.setInt(1, 1);
-                    updateUserIngredients.setInt(2, uid);
-                    updateUserIngredients.setInt(3, allIngredientsByID.get(2));
-                    
-               } 
-               updateUserIngredients.executeUpdate();
-               
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return quest;
     }
     
     public ArrayList<Potion> fetchAllPotions(){
@@ -405,6 +340,25 @@ public class DBHandler {
             e.printStackTrace();
         }
         return allUserBattleItems;
+    }
+    
+    public User fetchUserStats(int uid){
+        User u = new User();
+        
+        try{
+            getUserStats = connection.prepareStatement("SELECT * FROM users "
+                    + "WHERE id = " + uid);
+            ResultSet result = getUserStats.executeQuery();
+            if(result.next()){
+                u.setGold(result.getInt("gold"));
+                u.setPotionsCrafted(result.getInt("potions_crafted"));
+                u.setPotionsSold(result.getInt("potions_sold"));
+            }
+        } catch(Exception e){
+            e.printStackTrace();
+        }
+        
+        return u;
     }
     
     public int[] fetchUserEquipment(int uid){
@@ -575,6 +529,11 @@ public class DBHandler {
             //Remove ingredients used in brewing
             updateIngredientsList(uid,p);
    
+            //Update potions crafted
+            updatePotionsCrafted = connection.prepareStatement("UPDATE users SET potions_crafted = potions_crafted+"
+                    + cauldron + " WHERE id = ?");
+            updatePotionsCrafted.setInt(1, uid);
+            updatePotionsCrafted.executeUpdate();
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -715,12 +674,19 @@ public class DBHandler {
         
     }
     
-    public void buyBrewingItems(int uid, BrewingItem brew){
-        //Always do update on user equipment
+    public void buyBrewingItem(int uid, BrewingItem brew){
         
-        //Take money
-        
-        //
+        try{
+            updateUserEquipment = connection.prepareStatement("UPDATE user_equipment "
+                    + "SET cauldron = ? WHERE user_id = ?");
+            updateUserEquipment.setInt(1, brew.getId()); 
+            updateUserEquipment.setInt(2, uid);
+            updateUserEquipment.executeUpdate();
+            
+            decreaseGold(uid, brew.getPurchasePrice());
+        } catch(Exception e){
+            e.printStackTrace();
+        }
     }
     
     
